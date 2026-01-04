@@ -11,8 +11,8 @@ lastStep: 4
 project_name: 'DigitalWaveTest'
 user_name: 'Alexgaidukov'
 date: '2026-01-04'
-totalStories: 20
-totalEpics: 5
+totalStories: 21
+totalEpics: 6
 validationStatus: 'COMPLETE'
 allFRsCovered: true
 allNFRsCovered: true
@@ -1980,5 +1980,83 @@ So that users experience resilience even when things go wrong.
 - That the system is still responsive
 
 **Requirements fulfilled:** FR52, FR53, FR54, FR55, FR56, FR57, FR58, NFR-R2, NFR-R3, NFR-R4, NFR-R5, NFR-R6
+
+---
+
+## Epic 6: Prompt Structure Optimization
+
+**Epic Objective:** Reorder the improved prompt structure to follow the Task → Rules → Examples framework for better AI comprehension and user experience.
+
+**Business Value:** The current order (Rules → Task → Examples) doesn't align with best practices for prompt engineering. Reordering to Task → Rules → Examples will:
+- Improve AI comprehension by stating the objective first
+- Provide clearer context for users reviewing improved prompts
+- Align with industry-standard prompt engineering patterns
+- Enhance the educational value of the improvement suggestions
+
+**Scope:** This epic covers changes to both the API prompt generation logic and the UI display of improved prompts.
+
+---
+
+### Story 6.1: Prompt Structure Reorder (Task → Rules → Examples)
+
+**User Story:**
+As a user,
+I want the improved prompt to show the Task section first, followed by Rules, then Examples,
+So that the prompt follows best practices and is easier to understand.
+
+**Acceptance Criteria:**
+
+1. **API Prompt Generation Reorder**
+   - **Given** the system generates an improved prompt via OpenAI API
+   - **When** constructing the prompt structure
+   - **Then** sections MUST appear in order: Task → Rules → Examples
+   - **And** each section must be clearly labeled with headers
+   - **And** the OpenAI API prompt must explicitly request this order
+
+2. **UI Display Consistency**
+   - **Given** an improved prompt is displayed in the comparison modal
+   - **When** the improved prompt renders
+   - **Then** sections must display in order: Task → Rules → Examples
+   - **And** section highlighting must respect the new order
+   - **And** educational tooltips must remain accurate for the reordered sections
+
+3. **Backward Compatibility**
+   - **Given** existing prompts may have different structures
+   - **When** parsing improved prompts
+   - **Then** the system must handle prompts with any section order
+   - **And** the `parseImprovedPrompt()` function must detect sections regardless of position
+   - **And** highlighting must work correctly regardless of section order
+
+4. **OpenAI API Prompt Update**
+   - **Given** the `generateImprovement()` function calls OpenAI API
+   - **When** constructing the system prompt
+   - **Then** the prompt must explicitly state: "Structure the improved prompt with these sections in this exact order: Task, Rules, Examples"
+   - **And** provide examples of the correct structure
+   - **And** emphasize that Task should come first
+
+**Technical Requirements:**
+
+**Cloudflare Worker API Changes:**
+- Update the improvement prompt in `cloudflare-worker/worker.js`
+- Modify the system prompt to enforce Task → Rules → Examples order
+- Add explicit examples showing the correct structure
+
+**Frontend Changes:**
+- Update `parseImprovedPrompt()` to handle sections in any order (for robustness)
+- Ensure highlighting works correctly with the new order
+- Verify educational tooltips are accurate for reordered sections
+
+**Testing Considerations:**
+- Test with prompts that have all three sections (Task, Rules, Examples)
+- Test with prompts that have only some sections
+- Test backward compatibility with old-style prompts
+- Verify API responses follow the new structure
+
+**Dependencies:**
+- None (independent change)
+
+**Requirements fulfilled:** Custom enhancement based on user feedback
+
+**Source:** [User request via Scrum Master agent]
 
 ---

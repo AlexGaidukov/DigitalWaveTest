@@ -81,3 +81,8 @@ development_status:
   5-3-session-management: done
   5-4-comprehensive-error-handling: done
   epic-5-retrospective: optional
+
+  # Epic 6: Prompt Structure Optimization
+  epic-6: in-progress
+  6-1-prompt-structure-reorder: done
+  epic-6-retrospective: optional

@@ -190,12 +190,21 @@ async function handleImprovementAPI(request, env) {
     }
 
     // Define enhancement system prompt
-    const IMPROVEMENT_SYSTEM_PROMPT = `You are a prompt engineering expert specializing in the Rules/Task/Examples (R/T/E) framework. Analyze the user's original prompt and restructure it into a systematic format that produces better AI results.
+    const IMPROVEMENT_SYSTEM_PROMPT = `You are a prompt engineering expert specializing in prompt structure optimization. Analyze the user's original prompt and restructure it into a systematic format that produces better AI results.
 
-**R/T/E Framework:**
-- **Rules**: Constraints, guidelines, and requirements that guide the AI's output
-- **Task**: Clear, specific instruction of what to generate
-- **Examples**: Sample outputs, reference points, or style guides that anchor understanding
+**CRITICAL: Section Order Requirement**
+You MUST structure the improved prompt with these sections in this EXACT order:
+1. **Task:** (clearly state what the AI should generate - MUST come FIRST)
+2. **Rules:** (establish constraints and guidelines - comes SECOND)
+3. **Examples:** (provide reference points if applicable - comes THIRD)
+
+Each section must have a clear header (Task:, Rules:, Examples:).
+The Task section MUST come first, followed by Rules, then Examples.
+
+**Prompt Structure Framework:**
+- **Task**: Clear, specific instruction of what to generate (FIRST section)
+- **Rules**: Constraints, guidelines, and requirements that guide the AI's output (SECOND section)
+- **Examples**: Sample outputs, reference points, or style guides that anchor understanding (THIRD section)
 
 **Analysis Process:**
 1. Identify the user's core intent and goal
@@ -225,17 +234,20 @@ async function handleImprovementAPI(request, env) {
 - Only split on periods that mark sentence boundaries (followed by space and capital letter, or end of string)
 
 **Restructuring Guidelines:**
-- **Rules Section**: Add constraints from user feedback and inferred requirements
-  - Examples: "Premium positioning", "Family-friendly", "Ocean-safe ingredients"
-  - Include tone, style, format, and boundary constraints
-- **Task Section**: Create clear, specific action instruction
+- **Task Section (MUST BE FIRST)**: Create clear, specific action instruction
   - Bad: "Generate names"
   - Good: "Generate 10 creative product names for a premium sunscreen brand"
   - Include: quantity, type of output, target audience, context
-- **Examples Section**: Add reference points that anchor the AI's understanding
+  - This section ALWAYS comes first in the improved prompt
+- **Rules Section (MUST BE SECOND)**: Add constraints from user feedback and inferred requirements
+  - Examples: "Premium positioning", "Family-friendly", "Ocean-safe ingredients"
+  - Include tone, style, format, and boundary constraints
+  - This section ALWAYS comes after Task
+- **Examples Section (MUST BE THIRD)**: Add reference points that anchor the AI's understanding
   - Reference successful similar outputs
   - Provide style guidance or competitive examples
   - Give the AI a concrete target to aim for
+  - This section ALWAYS comes last (after Task and Rules)
 
 **One-to-Many Mapping:**
 - Each original sentence in the mapping array can map to MULTIPLE improved sections
@@ -257,21 +269,21 @@ async function handleImprovementAPI(request, env) {
 **Response Format (JSON):**
 Return valid JSON with this exact structure:
 {
-  "improvedPrompt": "Rules: [constraints]\\n\\nTask: [clear instruction]\\n\\nExamples: [references]",
+  "improvedPrompt": "Task: [clear instruction]\\n\\nRules: [constraints]\\n\\nExamples: [references]",
   "mapping": [
     {
       "originalSentence": "[exact text from original prompt]",
-      "improvedSections": ["Rules", "Task", "Examples"]
+      "improvedSections": ["Task", "Rules", "Examples"]
     }
   ],
   "explanations": [
     {
-      "section": "Rules",
-      "tooltip": "Rules establish constraints that guide the AI's creative direction and ensure alignment with your requirements."
-    },
-    {
       "section": "Task",
       "tooltip": "A clear task definition tells the AI exactly what to generate, eliminating ambiguity and improving output quality."
+    },
+    {
+      "section": "Rules",
+      "tooltip": "Rules establish constraints that guide the AI's creative direction and ensure alignment with your requirements."
     },
     {
       "section": "Examples",
@@ -280,12 +292,15 @@ Return valid JSON with this exact structure:
   ]
 }
 
+**CRITICAL: The improvedPrompt MUST follow this order: Task first, then Rules, then Examples. This is best practice for prompt engineering.**
+
 **Quality Checks:**
-- improvedPrompt must be a non-empty string with clear R/T/E structure
+- improvedPrompt must be a non-empty string with clear Task/Rules/Examples structure IN THAT ORDER
+- The improved prompt MUST start with "Task:" as the first section
 - mapping must be an array with at least one item
 - Every original sentence must be included in mapping
 - Each mapping item must have originalSentence (string) and improvedSections (array of strings)
-- explanations must be an array with exactly 3 items (one per section)
+- explanations must be an array with exactly 3 items (one per section) IN ORDER: Task, Rules, Examples
 - Each explanation must have section (string) and tooltip (string)
 - Tooltips must be 2-3 sentences, supportive tone, non-technical
 
@@ -389,12 +404,12 @@ Now analyze the user's original prompt and feedback, then return the improved ve
       return createErrorResponse(
         "INVALID_RESPONSE",
         "Invalid explanations length",
-        "Expected exactly 3 explanations (Rules, Task, Examples)"
+        "Expected exactly 3 explanations (Task, Rules, Examples)"
       );
     }
 
     // Validate each explanation
-    const requiredSections = ['Rules', 'Task', 'Examples'];
+    const requiredSections = ['Task', 'Rules', 'Examples'];
     for (const explanation of improvementData.explanations) {
       if (!explanation.section || typeof explanation.section !== 'string' || explanation.section.trim().length === 0) {
         return createErrorResponse(
