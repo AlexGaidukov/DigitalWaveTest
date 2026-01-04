@@ -71,7 +71,7 @@ development_status:
   4-1-comparison-modal-structure: done
   4-2-prompt-highlighting-visualization: done
   4-3-sentence-mapping-display: done
-  4-4-educational-tooltips: backlog
+  4-4-educational-tooltips: ready-for-dev
   epic-4-retrospective: optional
 
   # Epic 5: Prompt Application & Skill Transfer
