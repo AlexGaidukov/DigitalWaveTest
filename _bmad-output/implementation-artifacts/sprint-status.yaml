@@ -67,7 +67,7 @@ development_status:
   epic-3-retrospective: optional
 
   # Epic 4: Visual Comparison & Educational Tooltips
-  epic-4: in-progress
+  epic-4: done
   4-1-comparison-modal-structure: done
   4-2-prompt-highlighting-visualization: done
   4-3-sentence-mapping-display: done
