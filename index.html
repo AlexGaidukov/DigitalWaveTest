@@ -724,6 +724,58 @@
     .improved-prompt-with-badges {
       display: inline;
     }
+
+    /* Story 4.4: Tooltip Component Styles */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+
+    .tooltip__content {
+      position: fixed; /* Fixed positioning to avoid clipping by modal overflow */
+      top: 50%; /* Center vertically - will be positioned by JS */
+      left: 50%; /* Center horizontally - will be positioned by JS */
+      transform: translate(-50%, -50%); /* Center on viewport */
+      max-width: 500px; /* Much wider for better readability */
+      min-width: 300px; /* Minimum width for consistent appearance */
+      padding: 16px 20px; /* More padding for better readability */
+      background-color: rgba(44, 62, 80, 0.85); /* Dark background with 85% opacity */
+      color: #f8f9fa; /* High contrast text */
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); /* Stronger shadow for floating effect */
+      font-size: 0.9375rem; /* Slightly larger font (15px) */
+      line-height: 1.6; /* Better line spacing */
+      text-align: left; /* Left align for better readability */
+      white-space: pre-wrap; /* Preserve newlines and wrap text */
+      word-wrap: break-word; /* Break long words */
+      z-index: 9999; /* Very high z-index to be above everything including modal */
+      opacity: 0;
+      animation: tooltipFadeIn 0.2s ease-out forwards;
+      backdrop-filter: blur(10px); /* Blur background behind tooltip */
+      -webkit-backdrop-filter: blur(10px); /* Safari support */
+    }
+
+    .tooltip__arrow {
+      display: none; /* Hide arrow for centered modal-style tooltip */
+    }
+
+    @keyframes tooltipFadeIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    /* Focus indicator for keyboard accessibility */
+    .tooltip > span[tabindex="0"]:focus {
+      outline: 2px solid #4a90e2;
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
   </style>
 </head>
 <body>
@@ -1218,6 +1270,99 @@ Return JSON with:
 
     // LEAF COMPONENTS (defined first)
 
+    // Tooltip - Leaf component for displaying contextual help on hover/focus (Story 4.4)
+    // Provides educational explanations for R/T/E framework sections
+    // Props: children (React element) - Element that triggers the tooltip
+    //        content (string or React node) - Tooltip content text
+    // Accessibility: Keyboard accessible (focus/blur), screen reader support (aria-describedby), ESC key dismiss
+    const Tooltip = ({ children, content }) => {
+      const [isVisible, setIsVisible] = React.useState(false);
+      const [timeoutId, setTimeoutId] = React.useState(null);
+      const tooltipRef = React.useRef(null);
+
+      // Show tooltip with small delay to prevent accidental triggers
+      const handleMouseEnter = React.useCallback(() => {
+        const id = setTimeout(() => {
+          setIsVisible(true);
+        }, 100); // 100ms delay
+        setTimeoutId(id);
+      }, []);
+
+      // Hide tooltip immediately on mouse leave
+      const handleMouseLeave = React.useCallback(() => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        setIsVisible(false);
+      }, [timeoutId]);
+
+      // Handle keyboard accessibility
+      const handleFocus = React.useCallback(() => {
+        setIsVisible(true);
+      }, []);
+
+      const handleBlur = React.useCallback(() => {
+        setIsVisible(false);
+      }, []);
+
+      // Handle ESC key to dismiss
+      React.useEffect(() => {
+        const handleEscape = (e) => {
+          if (e.key === 'Escape' && isVisible) {
+            setIsVisible(false);
+          }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => {
+          document.removeEventListener('keydown', handleEscape);
+        };
+      }, [isVisible]);
+
+      // Clear timeout on unmount
+      React.useEffect(() => {
+        return () => {
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
+        };
+      }, [timeoutId]);
+
+      // Generate unique ID for aria-describedby
+      const tooltipId = React.useId();
+      const contentId = `tooltip-content-${tooltipId}`;
+
+      return (
+        <span
+          className="tooltip"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          ref={tooltipRef}
+        >
+          <span
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            tabIndex={0}
+            aria-describedby={isVisible ? contentId : undefined}
+          >
+            {children}
+          </span>
+
+          {isVisible && (
+            <div
+              id={contentId}
+              className="tooltip__content"
+              role="tooltip"
+              aria-live="polite"
+            >
+              <div className="tooltip__arrow"></div>
+              {content}
+            </div>
+          )}
+        </span>
+      );
+    };
+
     // MappingBadge - Leaf component for numbered mapping indicators (Story 4.3)
     // Shows relationship between original sentences and improved sections
     // Props: number (1, 2, 3) - Badge number, isActive (boolean) - Hover state, onClick (function) - Click handler
@@ -1426,7 +1571,8 @@ Return JSON with:
 
     // HighlightedSentences - Component for rendering original prompt with sentence highlights (Story 4.3)
     // Shows which original sentences were used in improved prompt with badge indicators
-    // Props: originalPrompt (string) - The original prompt text, sentenceMappings (array) - Mappings from parseMapping()
+    // Props: originalPrompt (string) - The original prompt text
+    //        sentenceMappings (array) - Mappings from parseMapping()
     const HighlightedSentences = ({ originalPrompt, sentenceMappings }) => {
       const sentences = parseSentences(originalPrompt, sentenceMappings);
 
@@ -1450,12 +1596,14 @@ Return JSON with:
       );
     };
 
-    // ImprovedPromptWithBadges - Renders improved prompt with highlights and mapping badges (Story 4.3)
-    // Combines HighlightedText (Story 4.2) with MappingBadge indicators
+    // ImprovedPromptWithBadges - Renders improved prompt with highlights, mapping badges, and educational tooltips (Story 4.3, 4.4)
+    // Combines HighlightedText (Story 4.2) with MappingBadge indicators (Story 4.3)
+    // Story 4.4: Adds educational tooltips on section HEADERS explaining the R/T/E framework
     // Props: text (string) - Improved prompt text, highlights (array) - From parseImprovedPrompt()
     //        badges (object) - Badge mappings from parseMapping(), activeBadgeNumber (number) - Currently hovered badge
     //        onBadgeHover (function) - Handler for badge hover
-    const ImprovedPromptWithBadges = ({ text, highlights, badges, activeBadgeNumber, onBadgeHover }) => {
+    //        explanations (array) - Section explanations from comparisonData.explanations (Story 4.4)
+    const ImprovedPromptWithBadges = ({ text, highlights, badges, activeBadgeNumber, onBadgeHover, explanations }) => {
       // Create a map of section → badge numbers for rendering badges next to section headers
       const sectionToBadges = React.useMemo(() => {
         const map = {};
@@ -1470,10 +1618,32 @@ Return JSON with:
         return map;
       }, [badges]);
 
+      // Story 4.4: Helper function to get educational tooltip content for a section
+      const getTooltipContent = React.useCallback((sectionName) => {
+        if (!explanations || explanations.length === 0) {
+          // Fallback to generic framework education tooltips
+          const genericTooltips = {
+            'Rules': "Rules establish constraints and guidelines that guide the AI's creative direction. They help the AI understand your brand voice, positioning, and requirements.",
+            'Task': "A clear task definition tells the AI exactly what to generate. Be specific about the output you want (e.g., 'Generate 10 product names' vs. 'Generate names').",
+            'Examples': "Examples anchor the AI's understanding of your desired style. Providing reference points helps the AI match your expectations."
+          };
+          return genericTooltips[sectionName] || "This section helps structure your prompt for better AI responses.";
+        }
+
+        // Find section-specific explanation from comparisonData.explanations
+        const explanation = explanations.find(ex => ex.section === sectionName);
+        if (explanation && explanation.tooltip) {
+          return explanation.tooltip;
+        }
+
+        // Fallback to generic
+        return `This ${sectionName.toLowerCase()} section helps structure your prompt for better AI responses.`;
+      }, [explanations]);
+
       // Parse highlights and inject badges next to section headers
       const segmentsWithBadges = React.useMemo(() => {
         if (!highlights || highlights.length === 0) {
-          return [{ text, type: null, badges: [] }];
+          return [{ text, type: null, badges: [], sectionName: null }];
         }
 
         const segments = [];
@@ -1485,7 +1655,8 @@ Return JSON with:
             segments.push({
               text: text.substring(lastIndex, highlight.startIndex),
               type: null,
-              badges: []
+              badges: [],
+              sectionName: null
             });
           }
 
@@ -1495,7 +1666,7 @@ Return JSON with:
             ? highlight.text.replace(':', '').trim()
             : null;
 
-          // Get badge numbers for this section
+          // Get badge numbers for this section header
           const sectionBadges = isSectionHeader && sectionToBadges[sectionName]
             ? sectionToBadges[sectionName]
             : [];
@@ -1504,7 +1675,8 @@ Return JSON with:
           segments.push({
             text: text.substring(highlight.startIndex, highlight.endIndex),
             type: highlight.type,
-            badges: sectionBadges
+            badges: sectionBadges,
+            sectionName: sectionName
           });
 
           lastIndex = highlight.endIndex;
@@ -1515,7 +1687,8 @@ Return JSON with:
           segments.push({
             text: text.substring(lastIndex),
             type: null,
-            badges: []
+            badges: [],
+            sectionName: null
           });
         }
 
@@ -1526,7 +1699,7 @@ Return JSON with:
         <span className="improved-prompt-with-badges">
           {segmentsWithBadges.map((segment, index) => {
             if (segment.type) {
-              return (
+              const segmentElement = (
                 <span
                   key={index}
                   className={`highlighted-text__segment highlighted-text__segment--${segment.type}`}
@@ -1542,6 +1715,17 @@ Return JSON with:
                   {segment.text}
                 </span>
               );
+
+              // Story 4.4: Add educational tooltip to section HEADERS (Rules:, Task:, Examples:)
+              if (segment.sectionName && ['Rules', 'Task', 'Examples'].includes(segment.sectionName)) {
+                return (
+                  <Tooltip key={index} content={getTooltipContent(segment.sectionName)}>
+                    {segmentElement}
+                  </Tooltip>
+                );
+              }
+
+              return segmentElement;
             }
             return <span key={index}>{segment.text}</span>;
           })}
@@ -1975,6 +2159,9 @@ Return JSON with:
       // Story 4.2: Parse improved prompt for highlights (after guard clause, safe to access comparisonData)
       const highlights = parseImprovedPrompt(comparisonData.improvedPrompt);
 
+      // Story 4.4: Extract explanations for tooltips (after guard clause, safe to access comparisonData)
+      const explanations = comparisonData.explanations || [];
+
       // Overlay click handler
       const handleOverlayClick = (e) => {
         if (e.target.classList.contains('comparison-modal__overlay')) {
@@ -2022,12 +2209,14 @@ Return JSON with:
                 </h3>
                 <div className="comparison-modal__content">
                   {/* Story 4.3: Use ImprovedPromptWithBadges instead of HighlightedText */}
+                  {/* Story 4.4: Pass explanations prop for educational tooltips on section headers (Rules:, Task:, Examples:) */}
                   <ImprovedPromptWithBadges
                     text={comparisonData.improvedPrompt}
                     highlights={highlights}
                     badges={badges}
                     activeBadgeNumber={activeBadgeNumber}
                     onBadgeHover={handleBadgeHover}
+                    explanations={explanations}
                   />
                 </div>
               </div>
