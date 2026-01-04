@@ -1,0 +1,7 @@
+name = "digitalwave-test-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+account_id = "331265379237f92f53d07710bb44f39b"
+
+[vars]
+ALLOWED_ORIGINS = "*"
