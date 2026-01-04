@@ -453,6 +453,277 @@
       cursor: not-allowed;
       background-color: rgba(0, 0, 0, 0.1);
     }
+
+    /* Story 4.1: Comparison Modal Component styling */
+    /* Modal Overlay - Semi-transparent backdrop */
+    .comparison-modal__overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    /* Modal Container - Centered box */
+    .comparison-modal {
+      background-color: #ffffff;
+      border-radius: calc(var(--border-radius) * 2);
+      max-width: 900px;
+      max-height: 80vh;
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      animation: slideUp 0.2s ease-out;
+      overflow: hidden;
+    }
+
+    /* Modal Header */
+    .comparison-modal__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: calc(var(--spacing-unit) * 1.5);
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .comparison-modal__title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--color-text);
+    }
+
+    .comparison-modal__close-button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+      color: #666;
+      transition: color 0.2s;
+    }
+
+    .comparison-modal__close-button:hover {
+      color: #333;
+    }
+
+    /* Modal Body - Two Column Layout */
+    .comparison-modal__body {
+      display: flex;
+      gap: calc(var(--spacing-unit) * 2);
+      padding: calc(var(--spacing-unit) * 1.5);
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    /* Columns */
+    .comparison-modal__column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0; /* Prevents flex items from overflowing */
+    }
+
+    .comparison-modal__column--original {
+      /* Left column styling */
+    }
+
+    .comparison-modal__column--improved {
+      /* Right column styling */
+    }
+
+    /* Column Headers */
+    .comparison-modal__column-header {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-unit);
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .comparison-modal__column-header--improved {
+      color: var(--color-primary);
+    }
+
+    /* Column Content */
+    .comparison-modal__content {
+      flex: 1;
+      font-size: 1rem;
+      line-height: 1.6;
+      white-space: pre-wrap; /* Preserve line breaks */
+      word-wrap: break-word; /* Wrap long words */
+      overflow-y: auto;
+    }
+
+    /* Modal Footer */
+    .comparison-modal__footer {
+      display: flex;
+      justify-content: center;
+      padding: calc(var(--spacing-unit) * 1.5);
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .comparison-modal__use-button {
+      background-color: var(--color-primary);
+      color: #ffffff;
+      border: none;
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .comparison-modal__use-button:hover {
+      background-color: #0052a3;
+      transform: translateY(-1px);
+    }
+
+    .comparison-modal__use-button:active {
+      transform: translateY(0);
+    }
+
+    /* Animations */
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Scrollbar styling for modal content */
+    .comparison-modal__content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .comparison-modal__content::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .comparison-modal__content::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    .comparison-modal__content::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    /* Story 4.2: HighlightedText Component Styles */
+    .highlighted-text {
+      display: inline;
+    }
+
+    .highlighted-text__segment {
+      padding: 2px 4px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    /* Addition highlight - Green/yellow background (subtle) */
+    .highlighted-text__segment--addition {
+      background-color: #d4edda; /* Subtle green */
+      color: #155724;
+    }
+
+    .highlighted-text__segment--addition:hover {
+      background-color: #c3e6cb; /* Slightly darker on hover */
+      transform: scale(1.02);
+    }
+
+    /* Change highlight - Orange/amber background */
+    .highlighted-text__segment--change {
+      background-color: #fff3cd; /* Subtle orange/amber */
+      color: #856404;
+    }
+
+    .highlighted-text__segment--change:hover {
+      background-color: #ffeeba;
+      transform: scale(1.02);
+    }
+
+    /* Enhancement highlight - Blue/purple background */
+    .highlighted-text__segment--enhancement {
+      background-color: #d1ecf1; /* Subtle blue */
+      color: #0c5460;
+    }
+
+    .highlighted-text__segment--enhancement:hover {
+      background-color: #bee5eb;
+      transform: scale(1.02);
+    }
+
+    /* Story 4.3: MappingBadge Component Styles */
+    .mapping-badge {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+      text-align: center;
+      border-radius: 50%;
+      background-color: #e9ecef; /* Muted gray */
+      color: #495057;
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 8px;
+      margin-right: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    }
+
+    .mapping-badge:hover,
+    .mapping-badge--active {
+      background-color: #adb5bd; /* Darker gray on hover */
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .mapping-badge:focus {
+      outline: 2px solid #007bff;
+      outline-offset: 2px;
+    }
+
+    /* Story 4.3: HighlightedSentences Component Styles */
+    .highlighted-sentences {
+      display: block;
+      white-space: pre-wrap; /* Preserve line breaks */
+      line-height: 1.6;
+    }
+
+    .original-sentence {
+      display: inline;
+    }
+
+    .original-sentence--highlighted {
+      background-color: #f8f9fa; /* Very subtle background */
+      border-bottom: 2px solid #dee2e6; /* Subtle underline */
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .original-sentence--highlighted:hover {
+      background-color: #e9ecef;
+      border-bottom-color: #adb5bd;
+    }
+
+    /* Story 4.3: ImprovedPromptWithBadges Styles */
+    .improved-prompt-with-badges {
+      display: inline;
+    }
   </style>
 </head>
 <body>
@@ -524,6 +795,154 @@ Return JSON with:
     // ============================================================
     // SECTION 2: UTILITY FUNCTIONS
     // ============================================================
+
+    // parseMapping - Parse mapping data to generate badge numbers and relationships (Story 4.3)
+    // Returns structured mapping data for rendering badges and highlights
+    // Returns: { badges: { badgeNumber: { originalSentence, improvedSections } }, sentenceMappings: [] }
+    const parseMapping = (mapping, originalPrompt) => {
+      const startTime = performance.now();
+
+      if (!mapping || !Array.isArray(mapping) || mapping.length === 0) {
+        return { badges: {}, sentenceMappings: [] };
+      }
+
+      // Generate badge numbers for each mapping group
+      const badges = {};
+      const sentenceMappings = [];
+
+      mapping.forEach((mapItem, index) => {
+        const badgeNumber = index + 1; // 1, 2, 3...
+
+        badges[badgeNumber] = {
+          originalSentence: mapItem.originalSentence,
+          improvedSections: mapItem.improvedSections || []
+        };
+
+        sentenceMappings.push({
+          badgeNumber: badgeNumber,
+          originalSentence: mapItem.originalSentence,
+          improvedSections: mapItem.improvedSections || []
+        });
+      });
+
+      const endTime = performance.now();
+      const parsingTime = endTime - startTime;
+
+      // Log performance in development (verify <200ms target per NFR-P6)
+      if (parsingTime > 50) {
+        console.warn(`parseMapping took ${parsingTime.toFixed(2)}ms (target: <200ms)`);
+      }
+
+      return { badges, sentenceMappings };
+    };
+
+    // parseSentences - Parse original prompt into sentences (period-delimited) (Story 4.3)
+    // Returns array of sentence objects with mapping badges
+    // Returns: [{ text, badgeNumber }]
+    // Story 4.3 Performance: Measures parsing time to verify <200ms target (NFR-P6)
+    const parseSentences = (originalPrompt, sentenceMappings) => {
+      const startTime = performance.now();
+
+      if (!originalPrompt || typeof originalPrompt !== 'string') {
+        return [];
+      }
+
+      // Split by period delimiter
+      const sentences = originalPrompt.split('.').filter(s => s.trim().length > 0);
+
+      const result = sentences.map(sentence => {
+        const trimmedSentence = sentence.trim();
+
+        // Find if this sentence has a mapping
+        const mapping = sentenceMappings.find(m =>
+          m.originalSentence.includes(trimmedSentence) ||
+          trimmedSentence.includes(m.originalSentence)
+        );
+
+        return {
+          text: trimmedSentence + '.', // Add period back
+          badgeNumber: mapping ? mapping.badgeNumber : null
+        };
+      });
+
+      const endTime = performance.now();
+      const parsingTime = endTime - startTime;
+
+      // Log performance in development (verify <200ms target per NFR-P6)
+      if (parsingTime > 50) {
+        console.warn(`parseSentences took ${parsingTime.toFixed(2)}ms (target: <200ms)`);
+      }
+
+      return result;
+    };
+
+    // parseImprovedPrompt - Parse improved prompt to extract R/T/E section highlights (Story 4.2)
+    // Returns array of highlight objects for HighlightedText component
+    // Each highlight object: { text, type, startIndex, endIndex }
+    // Type can be: 'addition' (section headers), 'enhancement' (section content)
+    // Story 4.2 Performance: Measures parsing time to verify <200ms target (NFR-P6)
+    const parseImprovedPrompt = (improvedPrompt) => {
+      const startTime = performance.now();
+
+      if (!improvedPrompt || typeof improvedPrompt !== 'string') {
+        return [];
+      }
+
+      const highlights = [];
+      const sections = [
+        { name: 'Rules', pattern: /Rules:/i },
+        { name: 'Task', pattern: /Task:/i },
+        { name: 'Examples', pattern: /Examples:/i }
+      ];
+
+      sections.forEach(section => {
+        const match = improvedPrompt.match(section.pattern);
+        if (match) {
+          const startIndex = match.index;
+          const endIndex = startIndex + match[0].length;
+
+          // Highlight section header (e.g., "Rules:")
+          highlights.push({
+            text: match[0],
+            type: 'addition',
+            startIndex: startIndex,
+            endIndex: endIndex
+          });
+
+          // Find the end of this section (start of next section or end of string)
+          let sectionEnd = improvedPrompt.length;
+          for (let nextSection of sections) {
+            if (nextSection.name !== section.name) {
+              const nextMatch = improvedPrompt.match(nextSection.pattern);
+              if (nextMatch && nextMatch.index > endIndex) {
+                sectionEnd = nextMatch.index;
+                break;
+              }
+            }
+          }
+
+          // Highlight section content (after header until next section)
+          if (sectionEnd > endIndex) {
+            highlights.push({
+              text: improvedPrompt.substring(endIndex, sectionEnd).trim(),
+              type: 'enhancement',
+              startIndex: endIndex,
+              endIndex: sectionEnd
+            });
+          }
+        }
+      });
+
+      const endTime = performance.now();
+      const parsingTime = endTime - startTime;
+
+      // Log performance in development (verify <200ms target per NFR-P6)
+      if (parsingTime > 50) {
+        console.warn(`parseImprovedPrompt took ${parsingTime.toFixed(2)}ms (target: <200ms)`);
+      }
+
+      return highlights;
+    };
 
     // Error formatting utility - maps technical errors to user-friendly messages
     // Returns error object: { message, code }
@@ -799,6 +1218,119 @@ Return JSON with:
 
     // LEAF COMPONENTS (defined first)
 
+    // MappingBadge - Leaf component for numbered mapping indicators (Story 4.3)
+    // Shows relationship between original sentences and improved sections
+    // Props: number (1, 2, 3) - Badge number, isActive (boolean) - Hover state, onClick (function) - Click handler
+    // Accessibility: Keyboard accessible with tabIndex, aria-label, and Enter/Space key support
+    const MappingBadge = ({ number, isActive = false, onClick }) => {
+      // Convert number to circled unicode character: ①, ②, ③, etc.
+      const circledNumbers = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
+      const badgeText = circledNumbers[number - 1] || number;
+
+      // Handle keyboard activation (Enter or Space)
+      const handleKeyDown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(e);
+        }
+      };
+
+      return (
+        <span
+          className={`mapping-badge ${isActive ? 'mapping-badge--active' : ''}`}
+          onClick={onClick}
+          onKeyDown={handleKeyDown}
+          role="button"
+          tabIndex={0}
+          aria-label={`Mapping group ${number}`}
+        >
+          {badgeText}
+        </span>
+      );
+    };
+
+    // HighlightedText - Leaf component for rendering text with highlighted segments (Story 4.2)
+    // Used to display improved prompt with color-coded R/T/E sections
+    // Props: text (string) - The full text to render
+    //        highlights (array) - Array of highlight objects: [{ text, type, startIndex, endIndex }]
+    //        type: 'addition' | 'change' | 'enhancement'
+    // Story 4.2 Performance: Measures rendering time to verify <200ms target (NFR-P6)
+    const HighlightedText = ({ text, highlights }) => {
+      const renderStartTime = React.useRef(null);
+
+      // Measure render performance (using useEffect to capture after render)
+      React.useEffect(() => {
+        if (renderStartTime.current) {
+          const renderEndTime = performance.now();
+          const renderTime = renderEndTime - renderStartTime.current;
+
+          // Log performance in development (verify <200ms target per NFR-P6)
+          if (renderTime > 100) {
+            console.warn(`HighlightedText render took ${renderTime.toFixed(2)}ms (target: <200ms)`);
+          }
+        }
+      });
+
+      // Start render timer
+      renderStartTime.current = performance.now();
+
+      // Guard clause - handle empty highlights gracefully
+      if (!text || !highlights || highlights.length === 0) {
+        return <span>{text}</span>;
+      }
+
+      // Sort highlights by startIndex to ensure correct order
+      const sortedHighlights = [...highlights].sort((a, b) => a.startIndex - b.startIndex);
+
+      // Build array of text segments (highlighted and non-highlighted)
+      const segments = [];
+      let lastIndex = 0;
+
+      sortedHighlights.forEach(highlight => {
+        // Add non-highlighted text before this highlight
+        if (highlight.startIndex > lastIndex) {
+          segments.push({
+            text: text.substring(lastIndex, highlight.startIndex),
+            type: null
+          });
+        }
+
+        // Add highlighted segment
+        segments.push({
+          text: text.substring(highlight.startIndex, highlight.endIndex),
+          type: highlight.type
+        });
+
+        lastIndex = highlight.endIndex;
+      });
+
+      // Add remaining text after last highlight
+      if (lastIndex < text.length) {
+        segments.push({
+          text: text.substring(lastIndex),
+          type: null
+        });
+      }
+
+      return (
+        <span className="highlighted-text">
+          {segments.map((segment, index) => {
+            if (segment.type) {
+              return (
+                <span
+                  key={index}
+                  className={`highlighted-text__segment highlighted-text__segment--${segment.type}`}
+                >
+                  {segment.text}
+                </span>
+              );
+            }
+            return <span key={index}>{segment.text}</span>;
+          })}
+        </span>
+      );
+    };
+
     // Button - Reusable button component with disabled state
     // AC #1: Button component with children, onClick, disabled, className props
     const Button = ({ children, onClick, disabled = false, className = '' }) => {
@@ -890,7 +1422,132 @@ Return JSON with:
       );
     };
 
-    // COMPOSITE COMPONENTS (defined after leaf)
+    // COMPOSITE COMPONENTS (defined after leaf components)
+
+    // HighlightedSentences - Component for rendering original prompt with sentence highlights (Story 4.3)
+    // Shows which original sentences were used in improved prompt with badge indicators
+    // Props: originalPrompt (string) - The original prompt text, sentenceMappings (array) - Mappings from parseMapping()
+    const HighlightedSentences = ({ originalPrompt, sentenceMappings }) => {
+      const sentences = parseSentences(originalPrompt, sentenceMappings);
+
+      return (
+        <div className="highlighted-sentences">
+          {sentences.map((sentence, index) => {
+            const hasMapping = sentence.badgeNumber !== null;
+
+            return (
+              <span
+                key={index}
+                className={`original-sentence ${hasMapping ? 'original-sentence--highlighted' : ''}`}
+              >
+                {sentence.text}
+                {hasMapping && <MappingBadge number={sentence.badgeNumber} />}
+                {' '}
+              </span>
+            );
+          })}
+        </div>
+      );
+    };
+
+    // ImprovedPromptWithBadges - Renders improved prompt with highlights and mapping badges (Story 4.3)
+    // Combines HighlightedText (Story 4.2) with MappingBadge indicators
+    // Props: text (string) - Improved prompt text, highlights (array) - From parseImprovedPrompt()
+    //        badges (object) - Badge mappings from parseMapping(), activeBadgeNumber (number) - Currently hovered badge
+    //        onBadgeHover (function) - Handler for badge hover
+    const ImprovedPromptWithBadges = ({ text, highlights, badges, activeBadgeNumber, onBadgeHover }) => {
+      // Create a map of section → badge numbers for rendering badges next to section headers
+      const sectionToBadges = React.useMemo(() => {
+        const map = {};
+        Object.entries(badges).forEach(([badgeNum, badgeData]) => {
+          badgeData.improvedSections.forEach(section => {
+            if (!map[section]) {
+              map[section] = [];
+            }
+            map[section].push(parseInt(badgeNum));
+          });
+        });
+        return map;
+      }, [badges]);
+
+      // Parse highlights and inject badges next to section headers
+      const segmentsWithBadges = React.useMemo(() => {
+        if (!highlights || highlights.length === 0) {
+          return [{ text, type: null, badges: [] }];
+        }
+
+        const segments = [];
+        let lastIndex = 0;
+
+        highlights.forEach(highlight => {
+          // Add non-highlighted text before this highlight
+          if (highlight.startIndex > lastIndex) {
+            segments.push({
+              text: text.substring(lastIndex, highlight.startIndex),
+              type: null,
+              badges: []
+            });
+          }
+
+          // Check if this highlight is a section header (e.g., "Rules:", "Task:", "Examples:")
+          const isSectionHeader = highlight.type === 'addition';
+          const sectionName = isSectionHeader
+            ? highlight.text.replace(':', '').trim()
+            : null;
+
+          // Get badge numbers for this section
+          const sectionBadges = isSectionHeader && sectionToBadges[sectionName]
+            ? sectionToBadges[sectionName]
+            : [];
+
+          // Add highlighted segment with badges
+          segments.push({
+            text: text.substring(highlight.startIndex, highlight.endIndex),
+            type: highlight.type,
+            badges: sectionBadges
+          });
+
+          lastIndex = highlight.endIndex;
+        });
+
+        // Add remaining text after last highlight
+        if (lastIndex < text.length) {
+          segments.push({
+            text: text.substring(lastIndex),
+            type: null,
+            badges: []
+          });
+        }
+
+        return segments;
+      }, [text, highlights, sectionToBadges]);
+
+      return (
+        <span className="improved-prompt-with-badges">
+          {segmentsWithBadges.map((segment, index) => {
+            if (segment.type) {
+              return (
+                <span
+                  key={index}
+                  className={`highlighted-text__segment highlighted-text__segment--${segment.type}`}
+                >
+                  {segment.badges.map(badgeNum => (
+                    <MappingBadge
+                      key={badgeNum}
+                      number={badgeNum}
+                      isActive={activeBadgeNumber === badgeNum}
+                      onClick={() => onBadgeHover(badgeNum)}
+                    />
+                  ))}
+                  {segment.text}
+                </span>
+              );
+            }
+            return <span key={index}>{segment.text}</span>;
+          })}
+        </span>
+      );
+    };
 
     // MessageList - Display list of chat messages with auto-scroll
     // AC #3: MessageList component with auto-scroll and empty state
@@ -1219,6 +1876,181 @@ Return JSON with:
       );
     });
 
+    // ComparisonModal - Layout component (Story 4.1)
+    // Modal for side-by-side comparison of original vs improved prompts
+    // Props: isOpen (boolean), comparisonData (object with originalPrompt, improvedPrompt), onClose (callback)
+    // Story 4.2: Enhanced with HighlightedText component for improved prompt highlighting
+    // Story 4.3: Enhanced with mapping badges and HighlightedSentences component
+    const ComparisonModal = ({ isOpen, comparisonData, onClose }) => {
+      const modalRef = React.useRef(null);
+      const triggerElementRef = React.useRef(null);
+
+      // Story 4.3: Parse mapping for badges (after guard clause, safe to access comparisonData)
+      const { badges, sentenceMappings } = React.useMemo(() => {
+        if (!comparisonData || !comparisonData.mapping) {
+          return { badges: {}, sentenceMappings: [] };
+        }
+        return parseMapping(comparisonData.mapping, comparisonData.originalPrompt);
+      }, [comparisonData]);
+
+      // Story 4.3: State for interactive hover (optional)
+      const [activeBadgeNumber, setActiveBadgeNumber] = React.useState(null);
+
+      const handleBadgeHover = React.useCallback((badgeNumber) => {
+        setActiveBadgeNumber(prevBadge => prevBadge === badgeNumber ? null : badgeNumber);
+      }, []);
+
+      // ESC key handler and keyboard focus trap
+      React.useEffect(() => {
+        const handleEscape = (e) => {
+          if (e.key === 'Escape') {
+            onClose();
+          }
+        };
+
+        // Focus trap: Tab key cycles within modal only
+        const handleTab = (e) => {
+          if (e.key === 'Tab') {
+            if (!modalRef.current) return;
+
+            const focusableElements = modalRef.current.querySelectorAll(
+              'button, [tabindex]:not([tabindex="-1"])'
+            );
+
+            if (focusableElements.length === 0) return;
+
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            if (e.shiftKey) {
+              // Shift+Tab: Focus moving backwards
+              if (document.activeElement === firstElement) {
+                e.preventDefault();
+                lastElement.focus();
+              }
+            } else {
+              // Tab: Focus moving forwards
+              if (document.activeElement === lastElement) {
+                e.preventDefault();
+                firstElement.focus();
+              }
+            }
+          }
+        };
+
+        if (isOpen) {
+          // Store trigger element for focus restoration
+          triggerElementRef.current = document.activeElement;
+
+          // Add event listeners
+          document.addEventListener('keydown', handleEscape);
+          document.addEventListener('keydown', handleTab);
+
+          // Set initial focus to first focusable element
+          if (modalRef.current) {
+            const firstFocusable = modalRef.current.querySelector(
+              'button, [tabindex]:not([tabindex="-1"])'
+            );
+            firstFocusable?.focus();
+          }
+        }
+
+        return () => {
+          // Cleanup: remove event listeners
+          document.removeEventListener('keydown', handleEscape);
+          document.removeEventListener('keydown', handleTab);
+
+          // Return focus to trigger element when modal closes
+          if (triggerElementRef.current) {
+            triggerElementRef.current.focus();
+          }
+        };
+      }, [isOpen, onClose]);
+
+      // Guard clause - don't render if closed or no data
+      if (!isOpen || !comparisonData) {
+        return null;
+      }
+
+      // Story 4.2: Parse improved prompt for highlights (after guard clause, safe to access comparisonData)
+      const highlights = parseImprovedPrompt(comparisonData.improvedPrompt);
+
+      // Overlay click handler
+      const handleOverlayClick = (e) => {
+        if (e.target.classList.contains('comparison-modal__overlay')) {
+          onClose();
+        }
+      };
+
+      return (
+        <div className="comparison-modal__overlay" onClick={handleOverlayClick}>
+          <div ref={modalRef} className="comparison-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            {/* Modal Header */}
+            <div className="comparison-modal__header">
+              <h2 id="modal-title" className="comparison-modal__title">
+                See how your prompt improved
+              </h2>
+              <button
+                className="comparison-modal__close-button"
+                onClick={onClose}
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body - Two Column Layout */}
+            <div className="comparison-modal__body">
+              {/* Left Column - Original Prompt (Story 4.3: WITH MAPPING HIGHLIGHTS) */}
+              <div className="comparison-modal__column comparison-modal__column--original">
+                <h3 className="comparison-modal__column-header">
+                  Your Original Prompt
+                </h3>
+                <div className="comparison-modal__content">
+                  {/* Story 4.3: Use HighlightedSentences with mapping badges */}
+                  <HighlightedSentences
+                    originalPrompt={comparisonData.originalPrompt}
+                    sentenceMappings={sentenceMappings}
+                  />
+                </div>
+              </div>
+
+              {/* Right Column - Improved Prompt (Story 4.2: WITH HIGHLIGHTING, Story 4.3: WITH MAPPING BADGES) */}
+              <div className="comparison-modal__column comparison-modal__column--improved">
+                <h3 className="comparison-modal__column-header comparison-modal__column-header--improved">
+                  Improved Version
+                </h3>
+                <div className="comparison-modal__content">
+                  {/* Story 4.3: Use ImprovedPromptWithBadges instead of HighlightedText */}
+                  <ImprovedPromptWithBadges
+                    text={comparisonData.improvedPrompt}
+                    highlights={highlights}
+                    badges={badges}
+                    activeBadgeNumber={activeBadgeNumber}
+                    onBadgeHover={handleBadgeHover}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer - Use This Prompt Button */}
+            <div className="comparison-modal__footer">
+              <button
+                className="comparison-modal__use-button"
+                onClick={() => {
+                  // Story 5.1 will implement "Use This Prompt" functionality
+                  // For now, just close modal
+                  onClose();
+                }}
+              >
+                Use This Prompt
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     // ============================================================
     // SECTION 5: CONTEXT PROVIDER
     // ============================================================
@@ -1248,6 +2080,13 @@ Return JSON with:
 
       // Feedback context
       const [recentFeedback, setRecentFeedback] = React.useState(null);
+
+      // Story 4.1: Close comparison modal handler
+      const handleCloseComparisonModal = () => {
+        setIsComparisonModalOpen(false);
+        // Optionally clear comparisonData
+        // setComparisonData(null);
+      };
 
       // AC #3: Immutable state update helpers
       const addMessage = (message) => {
@@ -1287,7 +2126,8 @@ Return JSON with:
         setRecentFeedback,
         // Helper functions
         addMessage,
-        clearChat
+        clearChat,
+        handleCloseComparisonModal
       }), [
         chatHistory,
         isChatLoading,
@@ -1315,8 +2155,11 @@ Return JSON with:
       const {
         isFeedbackModalOpen,
         setIsFeedbackModalOpen,
+        isComparisonModalOpen,
         setIsComparisonModalOpen,
+        comparisonData,
         setComparisonData,
+        handleCloseComparisonModal,
         chatHistory,
         setRecentFeedback,
         setIsGeneratingImprovement,
@@ -1402,6 +2245,13 @@ Return JSON with:
             isOpen={isFeedbackModalOpen}
             onClose={handleFeedbackClose}
             onSubmit={handleFeedbackSubmit}
+          />
+
+          {/* Story 4.1: Comparison Modal */}
+          <ComparisonModal
+            isOpen={isComparisonModalOpen}
+            comparisonData={comparisonData}
+            onClose={handleCloseComparisonModal}
           />
         </div>
       );
