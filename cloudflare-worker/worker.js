@@ -294,9 +294,16 @@ Return valid JSON with this exact structure:
 
 **CRITICAL: The improvedPrompt MUST follow this order: Task first, then Rules, then Examples. This is best practice for prompt engineering.**
 
+**CRITICAL: Each section appears EXACTLY ONCE - NO DUPLICATES!**
+- Task section appears ONE TIME at the beginning
+- Rules section appears ONE TIME after Task
+- Examples section appears ONE TIME after Rules (if applicable)
+- NEVER repeat or duplicate any section
+
 **Quality Checks:**
 - improvedPrompt must be a non-empty string with clear Task/Rules/Examples structure IN THAT ORDER
 - The improved prompt MUST start with "Task:" as the first section
+- Each section (Task, Rules, Examples) must appear EXACTLY ONCE - no duplicates allowed
 - mapping must be an array with at least one item
 - Every original sentence must be included in mapping
 - Each mapping item must have originalSentence (string) and improvedSections (array of strings)
