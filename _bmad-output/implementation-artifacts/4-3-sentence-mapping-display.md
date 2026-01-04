@@ -1,6 +1,6 @@
 # Story 4.3: Sentence Mapping Display
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -1258,7 +1258,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 ### File List
 
 **Modified Files:**
-- `index.html` - Added parseMapping() utility (42 lines), parseSentences() utility (26 lines), MappingBadge component (20 lines), HighlightedSentences component (22 lines), ImprovedPromptWithBadges component (98 lines), updated ComparisonModal (18 lines), CSS styles (58 lines)
+- `index.html` - Added parseMapping() utility (35 lines), parseSentences() utility (38 lines with performance tracking), MappingBadge component (30 lines with keyboard accessibility), HighlightedSentences component (22 lines), ImprovedPromptWithBadges component (98 lines), updated ComparisonModal (18 lines), CSS styles (58 lines)
 
 **Created Files:**
 - `_bmad-output/implementation-artifacts/4-3-sentence-mapping-display.md` - This story file
@@ -1333,8 +1333,15 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - Guard clauses for null/undefined inputs
 - Type safety (Array.isArray checks, typeof string checks)
 
-**Story 4.3 Ready for Review**
-Status: review
+**Code Review Fixes Applied:**
+- ✅ Fixed component definition order: Moved HighlightedSentences after MappingBadge (LEAF → COMPOSITE → LAYOUT)
+- ✅ Added performance measurement to parseSentences utility (startTime, endTime, console.warn if >50ms)
+- ✅ Added keyboard accessibility to MappingBadge: onKeyDown handler for Enter/Space key activation
+- ✅ Created git commit: 9322c1d "feat(story-4.3): Implement sentence mapping display with badges"
+- ✅ Updated story file line counts to match actual implementation
+
+**Story 4.3 Complete**
+Status: done
 
 **Ultimate Context Engine Analysis:**
 - ✓ Loaded all planning artifacts (epics, architecture, PRD, UX, project-context)
