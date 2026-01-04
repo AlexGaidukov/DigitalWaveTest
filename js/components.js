@@ -872,6 +872,7 @@ const FeedbackModal = ({ isOpen, onClose, onSubmit, error, onRetry }) => {
     if (isOpen && textareaRef.current) {
       textareaRef.current.focus();
       setFeedbackText(''); // Clear old feedback when modal opens
+      setIsSubmitting(false); // Reset submitting state when modal reopens
     }
   }, [isOpen]);
 
