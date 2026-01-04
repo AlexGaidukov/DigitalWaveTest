@@ -156,61 +156,90 @@ async function handleChatAPI(request, env) {
  */
 async function handleImprovementAPI(request, env) {
   try {
+    // Validate request method
+    if (request.method !== "POST") {
+      return createErrorResponse(
+        "INVALID_METHOD",
+        "Only POST requests allowed",
+        "Expected POST"
+      );
+    }
+
     // Validate origin
     validateOrigin(request, env);
 
     // Parse request body
     const body = await request.json();
 
-    if (!body.originalPrompt || typeof body.originalPrompt !== 'string' ||
-        !body.userFeedback || typeof body.userFeedback !== 'string') {
+    if (!body.originalPrompt || typeof body.originalPrompt !== 'string') {
       return createErrorResponse(
         "MISSING_FIELDS",
-        "Request must contain 'originalPrompt' and 'userFeedback' fields",
-        "Required fields: originalPrompt (string), userFeedback (string)"
+        "originalPrompt is required",
+        "Field: originalPrompt"
       );
     }
 
-    // Build improvement prompt
-    const improvementPrompt = `You are a prompt engineering expert. Analyze the user's original prompt and restructure it using the Rules/Task/Examples framework.
+    if (!body.userFeedback || typeof body.userFeedback !== 'string') {
+      return createErrorResponse(
+        "MISSING_FIELDS",
+        "userFeedback is required",
+        "Field: userFeedback"
+      );
+    }
+
+    // Define improvement system prompt (matches IMPROVEMENT_SYSTEM_PROMPT from client)
+    const IMPROVEMENT_SYSTEM_PROMPT = `You are a prompt engineering expert. Analyze the user's original prompt and restructure it using the Rules/Task/Examples framework.
 
 Rules: Constraints and guidelines the AI should follow
 Task: Clear, specific instruction of what to generate
 Examples: Sample outputs showing desired style
 
-Original Prompt: ${body.originalPrompt}
-User Feedback: ${body.userFeedback}
-
 Return JSON with:
 - improvedPrompt: restructured version
-- mapping: [{originalSentence, improvedSections: []}]
-- explanations: [{section, tooltip}]`;
+- mapping: array of {originalSentence, improvedSections: []}
+- explanations: array of {section, tooltip}`;
+
+    // Build user message with original prompt and feedback
+    const userMessage = `Original: "${body.originalPrompt}"\nFeedback: "${body.userFeedback}"\nRestructure using R/T/E framework.`;
 
     // Call OpenAI API with JSON response format
     const response = await callOpenAIAPI(
-      [{ role: 'user', content: improvementPrompt }],
-      "You are a prompt engineering expert. Always respond with valid JSON.",
+      [{ role: 'user', content: userMessage }],
+      IMPROVEMENT_SYSTEM_PROMPT,
       env,
-      15000, // 15 second timeout
+      15000, // 15 second timeout (NFR-P4)
       { type: "json_object" }
     );
 
-    // Parse JSON response
-    let improvedData;
+    // Parse JSON response from OpenAI
+    let improvementData;
     try {
-      improvedData = JSON.parse(response.choices[0].message.content);
+      improvementData = JSON.parse(response.choices[0].message.content);
     } catch (parseError) {
       return createErrorResponse(
-        "OPENAI_API_ERROR",
-        "Failed to parse improvement response",
-        "Invalid JSON returned from OpenAI"
+        "INVALID_RESPONSE",
+        "Invalid JSON from AI",
+        "Parse error"
+      );
+    }
+
+    // Validate response structure
+    if (!improvementData.improvedPrompt || !improvementData.mapping || !improvementData.explanations) {
+      return createErrorResponse(
+        "INVALID_RESPONSE",
+        "Missing required fields",
+        "Incomplete response"
       );
     }
 
     // Return success response
     return new Response(JSON.stringify({
       success: true,
-      data: improvedData
+      data: {
+        improvedPrompt: improvementData.improvedPrompt,
+        mapping: improvementData.mapping,
+        explanations: improvementData.explanations
+      }
     }), {
       headers: {
         'Content-Type': 'application/json',
@@ -223,7 +252,7 @@ Return JSON with:
       return createErrorResponse(
         "INVALID_ORIGIN",
         "Request from unauthorized domain",
-        "Origin not in ALLOWED_ORIGINS"
+        `Origin: ${request.headers.get('Origin')}`
       );
     }
     return handleOpenAIError(error);
