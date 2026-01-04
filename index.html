@@ -2895,10 +2895,13 @@ Return JSON with:
       }, [lastImprovementParams, setImprovementError, setIsGeneratingImprovement, setIsFeedbackModalOpen, setIsComparisonModalOpen, setComparisonData]);
 
       // Story 5.1: Handle "Use This Prompt" button click
-      // Code Review Fix: Added all dependencies, timeout cleanup, error handling
+      // Pastes improved prompt into input field for user to review and send
       const handleUseImprovedPrompt = React.useCallback((improvedPrompt) => {
         // Format improved prompt: replace multiple newlines with "; " for single-line display
         const formattedPrompt = improvedPrompt.replace(/\n\n+/g, '; ');
+
+        // Insert improved prompt into chat input field
+        setChatInputValue(formattedPrompt);
 
         // Close comparison modal
         setIsComparisonModalOpen(false);
@@ -2912,36 +2915,6 @@ Return JSON with:
           setRecentFeedback(null); // Clear old feedback data
           setLastImprovementParams(null); // Clear old improvement parameters
         }, 0);
-
-        // Submit the improved prompt directly to get new AI response
-        // This updates chat history so "Not Satisfied" works on the new response
-        const submitPromptAsync = async () => {
-          try {
-            // Add user message to chat history
-            addMessage({ role: 'user', content: formattedPrompt });
-
-            // Clear input
-            setChatInputValue('');
-
-            // Set loading state
-            setIsChatLoading(true);
-
-            // Call API
-            const aiResponse = await callChatAPI(formattedPrompt);
-
-            // Add AI response to chat history
-            addMessage({ role: 'assistant', content: aiResponse });
-          } catch (error) {
-            const formattedError = formatError(error);
-            setChatError(formattedError);
-            console.error('Chat API error after using improved prompt:', formattedError);
-          } finally {
-            setIsChatLoading(false);
-          }
-        };
-
-        // Execute the submission
-        submitPromptAsync();
 
         // Code Review Fix: Clear existing highlight timeout before setting new one
         if (highlightTimeoutRef.current) {
@@ -2990,7 +2963,7 @@ Return JSON with:
           }
           announcementTimeoutRef.current = null;
         }, 1000);
-      }, [setIsComparisonModalOpen, setChatInputValue, setImprovementError, setComparisonData, setIsGeneratingImprovement, addMessage, setIsChatLoading, setChatError, setIsInputHighlighted, chatInputRef]);
+      }, [setIsComparisonModalOpen, setChatInputValue, setImprovementError, setComparisonData, setIsGeneratingImprovement, setRecentFeedback, setLastImprovementParams, setIsInputHighlighted, chatInputRef]);
 
       return (
         <div className="app-container">
