@@ -500,12 +500,25 @@
       minerals, low sugar content (5-6g), and NON-GMO certification.
 
       **Option 4 - Cheese Product:**
-      Processed cheese slices in a blue plastic and cardboard package. Contains 12 
-      individually wrapped slices, 200g total weight. The packaging shows a burger 
-      photograph demonstrating product usage. Multilingual text appears in Arabic, English, 
-      and Spanish. The brand logo uses a simple, friendly rounded typeface in a dark blue 
+      Processed cheese slices in a blue plastic and cardboard package. Contains 12
+      individually wrapped slices, 200g total weight. The packaging shows a burger
+      photograph demonstrating product usage. Multilingual text appears in Arabic, English,
+      and Spanish. The brand logo uses a simple, friendly rounded typeface in a dark blue
       oval.`;
-    const API_TIMEOUT = 10000; // 10 seconds
+
+    const IMPROVEMENT_SYSTEM_PROMPT = `You are a prompt engineering expert. Analyze the user's original prompt and restructure it using the Rules/Task/Examples framework.
+
+Rules: Constraints and guidelines the AI should follow
+Task: Clear, specific instruction of what to generate
+Examples: Sample outputs showing desired style
+
+Return JSON with:
+- improvedPrompt: restructured version
+- mapping: [{originalSentence, improvedSections: []}]
+- explanations: [{section, tooltip}]`;
+
+    const CHAT_TIMEOUT = 10000; // 10 seconds for chat API
+    const IMPROVEMENT_TIMEOUT = 15000; // 15 seconds for improvement generation (NFR-P4)
     const MAX_PROMPT_LENGTH = 2000;
 
     // ============================================================
@@ -520,6 +533,8 @@
         'RATE_LIMIT_EXCEEDED': 'We\'re experiencing high demand. Please wait a moment and try again.',
         'INVALID_API_KEY': 'Service configuration error. Please contact support.',
         'NETWORK_ERROR': 'Connection issue. Please check your internet and try again.',
+        'INVALID_RESPONSE': 'The AI returned an invalid response. Please try again.',
+        'MISSING_FIELDS': 'Required information is missing. Please check your input and try again.',
         'UNKNOWN': 'Something went wrong. Please try again.'
       };
 
@@ -536,7 +551,7 @@
     async function callChatAPI(userPrompt) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+        const timeoutId = setTimeout(() => controller.abort(), CHAT_TIMEOUT);
 
         const response = await fetch(`${WORKER_URL}/api/chat`, {
           method: 'POST',
@@ -563,6 +578,79 @@
           throw formatError({ code: 'API_TIMEOUT' });
         }
         throw formatError(error);
+      }
+    }
+
+    // Improvement API integration - calls Cloudflare Worker proxy for prompt enhancement
+    // Returns: Promise with { improvedPrompt, mapping, explanations }
+    // Throws: Formatted error object with code and message
+    async function generateImprovement(originalPrompt, userFeedback) {
+      // Validate inputs
+      if (!originalPrompt || typeof originalPrompt !== 'string' || originalPrompt.trim() === '') {
+        throw formatError({ code: 'MISSING_FIELDS', message: 'Original prompt is required' });
+      }
+
+      if (!userFeedback || typeof userFeedback !== 'string' || userFeedback.trim() === '') {
+        throw formatError({ code: 'MISSING_FIELDS', message: 'User feedback is required' });
+      }
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), IMPROVEMENT_TIMEOUT);
+
+        const response = await fetch(`${WORKER_URL}/api/improve`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            originalPrompt: originalPrompt.trim(),
+            userFeedback: userFeedback.trim()
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error?.message || 'Unknown error');
+        }
+
+        // Validate response structure
+        const { improvedPrompt, mapping, explanations } = result.data;
+
+        if (!improvedPrompt || !mapping || !explanations) {
+          throw formatError({ code: 'INVALID_RESPONSE', message: 'Missing required fields in response' });
+        }
+
+        if (!Array.isArray(mapping) || !Array.isArray(explanations)) {
+          throw formatError({ code: 'INVALID_RESPONSE', message: 'Invalid response structure' });
+        }
+
+        return {
+          improvedPrompt,
+          mapping,
+          explanations
+        };
+
+      } catch (error) {
+        // Format error for user-friendly display
+        if (error.name === 'AbortError') {
+          throw formatError({ code: 'API_TIMEOUT', message: 'Request timeout' });
+        }
+
+        if (error.message.includes('fetch') || error.message.includes('Network')) {
+          throw formatError({ code: 'NETWORK_ERROR', message: error.message });
+        }
+
+        // Re-throw formatted errors
+        throw error;
       }
     }
 
@@ -1151,7 +1239,7 @@
         setIsFeedbackModalOpen(false);
       };
 
-      const handleFeedbackSubmit = (feedbackText) => {
+      const handleFeedbackSubmit = async (feedbackText) => {
         // Extract most recent messages from chat history
         // Find last user message
         const userMessages = chatHistory.filter(msg => msg.role === 'user');
@@ -1181,17 +1269,40 @@
         // Clear any previous improvement errors
         setImprovementError(null);
 
-        // Trigger improvement generation state (Epic 3 will implement actual API call)
+        // Trigger improvement generation state
         setIsGeneratingImprovement(true);
 
         // Close feedback modal
         setIsFeedbackModalOpen(false);
 
-        // TODO: Epic 3 will implement the actual improvement API call
-        // Temporary: Reset isGeneratingImprovement after 2 seconds for testing
-        setTimeout(() => {
+        try {
+          // Call improvement API (Story 3.1 implementation)
+          const { improvedPrompt, mapping, explanations } = await generateImprovement(
+            feedback.userPrompt,
+            feedback.feedbackText
+          );
+
+          // Store improvement data in context (for Epic 4 comparison modal)
+          setComparisonData({
+            originalPrompt: feedback.userPrompt,
+            improvedPrompt: improvedPrompt,
+            mapping: mapping,
+            explanations: explanations
+          });
+
+          // Clear loading state
           setIsGeneratingImprovement(false);
-        }, 2000);
+
+          // Open comparison modal (Epic 4 will implement the modal)
+          setIsComparisonModalOpen(true);
+
+        } catch (error) {
+          console.error('Improvement generation failed:', error);
+          setIsGeneratingImprovement(false);
+
+          // Show error in UI
+          setImprovementError(error);
+        }
       };
 
       return (
