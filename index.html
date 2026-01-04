@@ -622,22 +622,10 @@ Return JSON with:
           throw new Error(result.error?.message || 'Unknown error');
         }
 
-        // Validate response structure
-        const { improvedPrompt, mapping, explanations } = result.data;
+        // Parse and validate response using parseImprovementResponse utility
+        const improvementData = parseImprovementResponse(result);
 
-        if (!improvedPrompt || !mapping || !explanations) {
-          throw formatError({ code: 'INVALID_RESPONSE', message: 'Missing required fields in response' });
-        }
-
-        if (!Array.isArray(mapping) || !Array.isArray(explanations)) {
-          throw formatError({ code: 'INVALID_RESPONSE', message: 'Invalid response structure' });
-        }
-
-        return {
-          improvedPrompt,
-          mapping,
-          explanations
-        };
+        return improvementData;
 
       } catch (error) {
         // Format error for user-friendly display
@@ -649,9 +637,107 @@ Return JSON with:
           throw formatError({ code: 'NETWORK_ERROR', message: error.message });
         }
 
+        // Handle parseImprovementResponse errors
+        if (error.message && error.message.includes('INVALID_RESPONSE')) {
+          throw formatError({ code: 'INVALID_RESPONSE', message: error.message });
+        }
+
         // Re-throw formatted errors
         throw error;
       }
+    }
+
+    // Response parsing utility - validates and parses improvement API response
+    // Returns: { improvedPrompt, mapping, explanations }
+    // Throws: Error with code 'INVALID_RESPONSE' if validation fails
+    function parseImprovementResponse(apiResponse) {
+      // Extract data from Worker response
+      const { success, data, error } = apiResponse;
+
+      // Check for Worker error
+      if (!success || error) {
+        throw new Error(error?.code || 'WORKER_UNAVAILABLE');
+      }
+
+      // Validate improvedPrompt
+      if (!data.improvedPrompt || typeof data.improvedPrompt !== 'string') {
+        throw new Error('INVALID_RESPONSE: Missing or invalid improvedPrompt');
+      }
+
+      if (data.improvedPrompt.trim().length === 0) {
+        throw new Error('INVALID_RESPONSE: improvedPrompt is empty');
+      }
+
+      // Validate mapping
+      if (!data.mapping || !Array.isArray(data.mapping)) {
+        throw new Error('INVALID_RESPONSE: Missing or invalid mapping');
+      }
+
+      if (data.mapping.length === 0) {
+        throw new Error('INVALID_RESPONSE: mapping array is empty');
+      }
+
+      // Validate each mapping item
+      for (let i = 0; i < data.mapping.length; i++) {
+        const item = data.mapping[i];
+
+        if (!item.originalSentence || typeof item.originalSentence !== 'string') {
+          throw new Error(`INVALID_RESPONSE: mapping[${i}] missing originalSentence`);
+        }
+
+        if (!item.improvedSections || !Array.isArray(item.improvedSections)) {
+          throw new Error(`INVALID_RESPONSE: mapping[${i}] missing improvedSections`);
+        }
+
+        if (item.improvedSections.length === 0) {
+          throw new Error(`INVALID_RESPONSE: mapping[${i}].improvedSections is empty`);
+        }
+      }
+
+      // Validate explanations
+      if (!data.explanations || !Array.isArray(data.explanations)) {
+        throw new Error('INVALID_RESPONSE: Missing or invalid explanations');
+      }
+
+      if (data.explanations.length !== 3) {
+        throw new Error('INVALID_RESPONSE: Expected exactly 3 explanations (Rules, Task, Examples)');
+      }
+
+      // Validate each explanation
+      const requiredSections = ['Rules', 'Task', 'Examples'];
+      const foundSections = [];
+
+      for (let i = 0; i < data.explanations.length; i++) {
+        const explanation = data.explanations[i];
+
+        if (!explanation.section || typeof explanation.section !== 'string') {
+          throw new Error(`INVALID_RESPONSE: explanations[${i}] missing section`);
+        }
+
+        if (!explanation.tooltip || typeof explanation.tooltip !== 'string') {
+          throw new Error(`INVALID_RESPONSE: explanations[${i}] missing tooltip`);
+        }
+
+        if (explanation.tooltip.trim().length === 0) {
+          throw new Error(`INVALID_RESPONSE: explanations[${i}].tooltip is empty`);
+        }
+
+        foundSections.push(explanation.section);
+      }
+
+      // Verify all required sections are present
+      for (const required of requiredSections) {
+        if (!foundSections.includes(required)) {
+          throw new Error(`INVALID_RESPONSE: Missing explanation for ${required} section`);
+        }
+      }
+
+      // Return validated data
+      return {
+        improvedPrompt: data.improvedPrompt,
+        mapping: data.mapping,
+        explanations: data.explanations
+      };
     }
 
     // ============================================================
@@ -1229,6 +1315,8 @@ Return JSON with:
       const {
         isFeedbackModalOpen,
         setIsFeedbackModalOpen,
+        setIsComparisonModalOpen,
+        setComparisonData,
         chatHistory,
         setRecentFeedback,
         setIsGeneratingImprovement,

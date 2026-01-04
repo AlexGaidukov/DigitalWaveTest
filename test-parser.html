@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test parseImprovementResponse</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .test {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    .pass {
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+    }
+    .fail {
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 10px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>parseImprovementResponse Test Suite</h1>
+  <div id="results"></div>
+
+  <script>
+    // Copy of parseImprovementResponse function for testing
+    function parseImprovementResponse(apiResponse) {
+      // Extract data from Worker response
+      const { success, data, error } = apiResponse;
+
+      // Check for Worker error
+      if (!success || error) {
+        throw new Error(error?.code || 'WORKER_UNAVAILABLE');
+      }
+
+      // Validate improvedPrompt
+      if (!data.improvedPrompt || typeof data.improvedPrompt !== 'string') {
+        throw new Error('INVALID_RESPONSE: Missing or invalid improvedPrompt');
+      }
+
+      if (data.improvedPrompt.trim().length === 0) {
+        throw new Error('INVALID_RESPONSE: improvedPrompt is empty');
+      }
+
+      // Validate mapping
+      if (!data.mapping || !Array.isArray(data.mapping)) {
+        throw new Error('INVALID_RESPONSE: Missing or invalid mapping');
+      }
+
+      if (data.mapping.length === 0) {
+        throw new Error('INVALID_RESPONSE: mapping array is empty');
+      }
+
+      // Validate each mapping item
+      for (let i = 0; i < data.mapping.length; i++) {
+        const item = data.mapping[i];
+
+        if (!item.originalSentence || typeof item.originalSentence !== 'string') {
+          throw new Error(`INVALID_RESPONSE: mapping[${i}] missing originalSentence`);
+        }
+
+        if (!item.improvedSections || !Array.isArray(item.improvedSections)) {
+          throw new Error(`INVALID_RESPONSE: mapping[${i}] missing improvedSections`);
+        }
+
+        if (item.improvedSections.length === 0) {
+          throw new Error(`INVALID_RESPONSE: mapping[${i}].improvedSections is empty`);
+        }
+      }
+
+      // Validate explanations
+      if (!data.explanations || !Array.isArray(data.explanations)) {
+        throw new Error('INVALID_RESPONSE: Missing or invalid explanations');
+      }
+
+      if (data.explanations.length !== 3) {
+        throw new Error('INVALID_RESPONSE: Expected exactly 3 explanations (Rules, Task, Examples)');
+      }
+
+      // Validate each explanation
+      const requiredSections = ['Rules', 'Task', 'Examples'];
+      const foundSections = [];
+
+      for (let i = 0; i < data.explanations.length; i++) {
+        const explanation = data.explanations[i];
+
+        if (!explanation.section || typeof explanation.section !== 'string') {
+          throw new Error(`INVALID_RESPONSE: explanations[${i}] missing section`);
+        }
+
+        if (!explanation.tooltip || typeof explanation.tooltip !== 'string') {
+          throw new Error(`INVALID_RESPONSE: explanations[${i}] missing tooltip`);
+        }
+
+        if (explanation.tooltip.trim().length === 0) {
+          throw new Error(`INVALID_RESPONSE: explanations[${i}].tooltip is empty`);
+        }
+
+        foundSections.push(explanation.section);
+      }
+
+      // Verify all required sections are present
+      for (const required of requiredSections) {
+        if (!foundSections.includes(required)) {
+          throw new Error(`INVALID_RESPONSE: Missing explanation for ${required} section`);
+        }
+      }
+
+      // Return validated data
+      return {
+        improvedPrompt: data.improvedPrompt,
+        mapping: data.mapping,
+        explanations: data.explanations
+      };
+    }
+
+    // Test cases
+    const tests = [
+      {
+        name: 'Test 1: Valid response',
+        input: {
+          success: true,
+          data: {
+            improvedPrompt: "Rules: premium positioning\n\nTask: Generate 10 names\n\nExamples: SunSplash",
+            mapping: [
+              { originalSentence: "red can", improvedSections: ["Rules", "Task"] }
+            ],
+            explanations: [
+              { section: "Rules", tooltip: "Rules establish constraints..." },
+              { section: "Task", tooltip: "Clear task definition..." },
+              { section: "Examples", tooltip: "Examples anchor understanding..." }
+            ]
+          }
+        },
+        shouldPass: true
+      },
+      {
+        name: 'Test 2: Missing improvedPrompt',
+        input: {
+          success: true,
+          data: { mapping: [], explanations: [] }
+        },
+        shouldPass: false
+      },
+      {
+        name: 'Test 3: Empty improvedPrompt',
+        input: {
+          success: true,
+          data: { improvedPrompt: "   ", mapping: [], explanations: [] }
+        },
+        shouldPass: false
+      },
+      {
+        name: 'Test 4: Invalid mapping (not an array)',
+        input: {
+          success: true,
+          data: {
+            improvedPrompt: "valid",
+            mapping: "not an array",
+            explanations: []
+          }
+        },
+        shouldPass: false
+      },
+      {
+        name: 'Test 5: Empty mapping array',
+        input: {
+          success: true,
+          data: {
+            improvedPrompt: "valid",
+            mapping: [],
+            explanations: []
+          }
+        },
+        shouldPass: false
+      },
+      {
+        name: 'Test 6: Invalid mapping item (missing originalSentence)',
+        input: {
+          success: true,
+          data: {
+            improvedPrompt: "valid",
+            mapping: [{ improvedSections: ["Rules"] }],
+            explanations: []
+          }
+        },
+        shouldPass: false
+      },
+      {
+        name: 'Test 7: Invalid mapping item (missing improvedSections)',
+        input: {
+          success: true,
+          data: {
+            improvedPrompt: "valid",
+            mapping: [{ originalSentence: "test" }],
+            explanations: []
+          }
+        },
+        shouldPass: false
+      },
+      {
+        name: 'Test 8: Invalid explanations (wrong count)',
+        input: {
+          success: true,
+          data: {
+            improvedPrompt: "valid",
+            mapping: [{ originalSentence: "test", improvedSections: ["Rules"] }],
+            explanations: [
+              { section: "Rules", tooltip: "test" },
+              { section: "Task", tooltip: "test" }
+            ]
+          }
+        },
+        shouldPass: false
+      },
+      {
+        name: 'Test 9: Worker error response',
+        input: {
+          success: false,
+          error: { code: 'WORKER_UNAVAILABLE', message: 'Worker error' }
+        },
+        shouldPass: false
+      }
+    ];
+
+    // Run tests
+    const resultsDiv = document.getElementById('results');
+    let passCount = 0;
+    let failCount = 0;
+
+    tests.forEach(test => {
+      const testDiv = document.createElement('div');
+      testDiv.className = 'test';
+
+      try {
+        const result = parseImprovementResponse(test.input);
+
+        if (test.shouldPass) {
+          testDiv.classList.add('pass');
+          testDiv.innerHTML = `
+            <strong>✅ PASS: ${test.name}</strong>
+            <pre>Result: ${JSON.stringify(result, null, 2)}</pre>
+          `;
+          passCount++;
+        } else {
+          testDiv.classList.add('fail');
+          testDiv.innerHTML = `
+            <strong>❌ FAIL: ${test.name}</strong>
+            <p>Expected error but got result: ${JSON.stringify(result)}</p>
+          `;
+          failCount++;
+        }
+      } catch (error) {
+        if (!test.shouldPass) {
+          testDiv.classList.add('pass');
+          testDiv.innerHTML = `
+            <strong>✅ PASS: ${test.name}</strong>
+            <pre>Error (expected): ${error.message}</pre>
+          `;
+          passCount++;
+        } else {
+          testDiv.classList.add('fail');
+          testDiv.innerHTML = `
+            <strong>❌ FAIL: ${test.name}</strong>
+            <pre>Unexpected error: ${error.message}</pre>
+          `;
+          failCount++;
+        }
+      }
+
+      resultsDiv.appendChild(testDiv);
+    });
+
+    // Summary
+    const summaryDiv = document.createElement('div');
+    summaryDiv.style.marginTop = '20px';
+    summaryDiv.style.padding = '15px';
+    summaryDiv.style.background = '#e7f3ff';
+    summaryDiv.style.border = '2px solid #0066cc';
+    summaryDiv.innerHTML = `
+      <h2>Test Summary</h2>
+      <p><strong>Total Tests:</strong> ${tests.length}</p>
+      <p><strong>Passed:</strong> ${passCount}</p>
+      <p><strong>Failed:</strong> ${failCount}</p>
+      <p><strong>Success Rate:</strong> ${((passCount / tests.length) * 100).toFixed(1)}%</p>
+    `;
+    resultsDiv.appendChild(summaryDiv);
+  </script>
+</body>
+</html>

@@ -9,6 +9,7 @@ node_modules/
 # Build files
 dist/
 build/
+.wrangler/
 
 # IDE
 .vscode/
