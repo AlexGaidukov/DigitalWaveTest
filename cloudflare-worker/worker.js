@@ -365,6 +365,39 @@ Now analyze the user's original prompt and feedback, then return the improved ve
       );
     }
 
+    // CRITICAL: Validate NO DUPLICATE sections in improved prompt
+    const promptText = improvementData.improvedPrompt;
+    const taskMatches = promptText.match(/Task:/gi);
+    const rulesMatches = promptText.match(/Rules:/gi);
+    const examplesMatches = promptText.match(/Examples:/gi);
+
+    if (taskMatches && taskMatches.length > 1) {
+      console.error('Duplicate Task sections detected:', taskMatches.length);
+      return createErrorResponse(
+        "INVALID_RESPONSE",
+        "AI generated duplicate Task sections",
+        `Found ${taskMatches.length} Task sections, expected 1`
+      );
+    }
+
+    if (rulesMatches && rulesMatches.length > 1) {
+      console.error('Duplicate Rules sections detected:', rulesMatches.length);
+      return createErrorResponse(
+        "INVALID_RESPONSE",
+        "AI generated duplicate Rules sections",
+        `Found ${rulesMatches.length} Rules sections, expected 1`
+      );
+    }
+
+    if (examplesMatches && examplesMatches.length > 1) {
+      console.error('Duplicate Examples sections detected:', examplesMatches.length);
+      return createErrorResponse(
+        "INVALID_RESPONSE",
+        "AI generated duplicate Examples sections",
+        `Found ${examplesMatches.length} Examples sections, expected 1`
+      );
+    }
+
     if (!improvementData.mapping || !Array.isArray(improvementData.mapping)) {
       return createErrorResponse(
         "INVALID_RESPONSE",
