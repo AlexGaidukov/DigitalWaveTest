@@ -53,7 +53,7 @@ development_status:
 
   # Epic 2: Failure-Driven Feedback Capture
   epic-2: in-progress
-  2-1-not-satisfied-button-integration: review
+  2-1-not-satisfied-button-integration: done
   2-2-feedback-modal-component: backlog
   2-3-feedback-submission-handler: backlog
   2-4-feedback-processing-state: backlog
