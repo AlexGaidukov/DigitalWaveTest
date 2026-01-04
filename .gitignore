@@ -1,5 +1,7 @@
 # Environment variables
 .env
+**/.dev.vars
+*.dev.vars
 
 # Node modules
 node_modules/

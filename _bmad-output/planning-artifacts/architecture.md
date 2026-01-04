@@ -1887,6 +1887,492 @@ All project requirements are architecturally supported, with clear mapping from 
 **🏗️ Solid Foundation**
 The chosen single HTML file architecture provides a rapid-development foundation optimized for the 2-day MVP timeline while maintaining best practices.
 
+## Cloudflare Worker Implementation Architecture
+
+### Overview
+
+**Story Reference:** 1-0-cloudflare-worker-implementation
+**Component Type:** Serverless API Proxy
+**Purpose:** Secure OpenAI API integration with client-side applications
+
+**Architectural Role:**
+The Cloudflare Worker serves as the critical security boundary between the client-side application (hosted on GitHub Pages) and OpenAI API. It provides API key protection, CORS handling, request validation, and response standardization.
+
+### Technical Architecture
+
+**Cloudflare Workers Runtime:**
+- **Runtime:** V8 isolate-based JavaScript engine (Edge computing)
+- **Compatibility Date:** 2024-01-01 (ensures consistent API behavior)
+- **Execution Model:** Stateless, request-scoped, auto-scaling
+- **Cold Start Time:** <5ms (typically negligible for API proxy workload)
+- **Maximum Request Size:** 100MB (far exceeds our prompt size requirements)
+- **Free Tier Limits:** 100,000 requests/day (sufficient for MVP demonstration)
+
+**Worker Hierarchy:**
+```
+Cloudflare Worker Entry Point (worker.js)
+├── CORS Handler (OPTIONS preflight)
+├── Router (pathname-based routing)
+│   ├── /api/chat → Chat API Handler
+│   └── /api/improve → Improvement API Handler
+└── Error Response Generator
+```
+
+### Request Flow Architecture
+
+**1. Incoming Request Processing:**
+```
+Client Request (GitHub Pages)
+  ↓
+Cloudflare Edge (Nearest PoP)
+  ↓
+Worker Execution (worker.js)
+  ↓
+CORS Preflight Check (OPTIONS)
+  ↓
+Route Determination (/api/chat or /api/improve)
+  ↓
+Origin Validation
+  ↓
+Request Validation
+  ↓
+OpenAI API Forwarding
+  ↓
+Response Standardization
+  ↓
+CORS Headers Injection
+  ↓
+Client Response
+```
+
+**2. Error Handling Flow:**
+```
+Request Failure
+  ↓
+Error Type Detection
+  ├── OpenAI API Errors (rate limit, auth, timeout)
+  ├── Validation Errors (missing fields, invalid origin)
+  └── Network Errors (DNS, connection)
+  ↓
+Error Code Mapping
+  ↓
+Standardized Error Response
+  ↓
+Client Receives User-Friendly Message
+```
+
+### Core Architectural Decisions
+
+**Decision 1: Request Routing Pattern**
+- **Pattern:** Pathname-based routing in single worker entry point
+- **Rationale:** Single worker handles both endpoints, reducing deployment complexity
+- **Alternative Considered:** Separate workers for each endpoint (rejected as over-engineering)
+- **Trade-offs:** Single point of failure (mitigated by Cloudflare's 99.99% uptime SLA)
+
+**Decision 2: CORS Strategy**
+- **Pattern:** Wildcard CORS (`Access-Control-Allow-Origin: *`)
+- **Rationale:** GitHub Pages deployment with unpredictable user domains
+- **Security Mitigation:** Origin validation at application logic layer (not just CORS headers)
+- **Future Enhancement:** Whitelist specific origins in production (ALLOWED_ORIGINS env var)
+
+**Decision 3: Error Standardization**
+- **Pattern:** Centralized error response format with { success, error: { code, message, details } }
+- **Rationale:** Consistent client-side error handling across all API failures
+- **Impact:** Enables `formatError()` utility in client code to map technical→user-friendly messages
+
+**Decision 4: OpenAI API Integration**
+- **Pattern:** Direct fetch() calls to OpenAI from Worker (no SDK)
+- **Rationale:** Minimal dependencies, faster cold starts, full control over request format
+- **Trade-off:** Manual request/response handling vs. SDK convenience (acceptable for simple proxy)
+
+**Decision 5: Secret Management**
+- **Pattern:** Environment variables via Cloudflare Secrets (`OPENAI_API_KEY`)
+- **Rationale:** Secrets encrypted at rest, never logged, scoped to worker deployment
+- **Development:** `.dev.vars` for local testing (gitignored)
+- **Security:** API key never exposed in client code or worker source
+
+### Implementation Patterns
+
+**Pattern 1: Request Handler Structure**
+
+All endpoint handlers follow this signature:
+```javascript
+async function handleEndpoint(request, env) {
+  try {
+    // 1. Validate request method (POST only)
+    // 2. Parse request body JSON
+    // 3. Validate required fields
+    // 4. Validate origin
+    // 5. Call OpenAI API
+    // 6. Parse API response
+    // 7. Return standardized success response
+  } catch (error) {
+    // Return standardized error response
+    return createErrorResponse(error.code, error.message, error.details);
+  }
+}
+```
+
+**Pattern 2: Origin Validation**
+
+```javascript
+function validateOrigin(request, env) {
+  const origin = request.headers.get('Origin');
+  const allowedOrigins = env.ALLOWED_ORIGINS.split(',');
+
+  // Development: Allow localhost
+  // Production: Validate against whitelist
+  const isAllowed = allowedOrigins.some(allowed => {
+    if (allowed.includes('*')) {
+      return origin.match(allowed.replace('*', '.*'));
+    }
+    return origin === allowed;
+  });
+
+  if (!isAllowed) {
+    throw new Error('INVALID_ORIGIN');
+  }
+}
+```
+
+**Pattern 3: OpenAI API Forwarding**
+
+```javascript
+async function callOpenAIAPI(messages, env) {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'gpt-3.5-turbo',
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 1000
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error?.code || 'OPENAI_API_ERROR');
+  }
+
+  return response.json();
+}
+```
+
+**Pattern 4: Response Standardization**
+
+```javascript
+function createSuccessResponse(data) {
+  return new Response(JSON.stringify({
+    success: true,
+    data: data
+  }), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
+
+function createErrorResponse(code, message, details) {
+  return new Response(JSON.stringify({
+    success: false,
+    error: {
+      code: code,
+      message: message,
+      details: details
+    }
+  }), {
+    status: 400, // or appropriate status code
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
+```
+
+### Security Architecture
+
+**API Key Protection (NFR-S1):**
+- **Storage:** Cloudflare Secrets (encrypted at rest)
+- **Transmission:** HTTPS only (TLS 1.3 enforced by Cloudflare)
+- **Exposure:** Never logged, never returned in responses, never accessible from client
+
+**Origin Validation (NFR-S3):**
+```javascript
+// Production: Whitelist specific GitHub Pages domain
+ALLOWED_ORIGINS = "https://username.github.io"
+
+// Development: Allow localhost for testing
+ALLOWED_ORIGINS = "http://localhost:*,http://127.0.0.1:*"
+```
+
+**Request Validation:**
+- **Method Enforcement:** Only POST requests accepted for API endpoints
+- **Content-Type Validation:** Only `application/json` accepted
+- **Field Validation:** Required fields checked before OpenAI API call
+- **Size Limits:** Maximum prompt length enforced (10,000 characters)
+
+**Rate Limiting:**
+- **OpenAI Side:** Respects OpenAI's rate limits (3,000 RPM for gpt-3.5-turbo)
+- **Cloudflare Side:** No additional rate limiting for MVP (OpenAI limits are sufficient)
+- **Future Enhancement:** Implement Cloudflare Workers KV for rate limiting if abuse detected
+
+**XSS Prevention (NFR-S4):**
+- **Sanitization:** All user inputs validated before forwarding to OpenAI
+- **Response Sanitization:** OpenAI responses treated as untrusted, not executed as JavaScript
+- **Content-Type:** Explicitly set to `application/json` to prevent MIME sniffing
+
+### Error Handling Architecture
+
+**Error Code Mapping:**
+
+| Error Code | HTTP Status | User Message | Technical Details | Retry |
+|------------|-------------|--------------|-------------------|-------|
+| `INVALID_ORIGIN` | 403 | "Unauthorized request" | Origin not in ALLOWED_ORIGINS | No |
+| `MISSING_FIELDS` | 400 | "Invalid request data" | Required field missing from request | No |
+| `API_TIMEOUT` | 504 | "Request timed out" | OpenAI API call exceeded 10s | Yes |
+| `RATE_LIMIT_EXCEEDED` | 429 | "Too many requests" | OpenAI rate limit hit | Yes (after delay) |
+| `INVALID_API_KEY` | 500 | "Service configuration error" | OPENAI_API_KEY invalid | No |
+| `OPENAI_API_ERROR` | 502 | "API service error" | OpenAI returned error response | Yes |
+| `NETWORK_ERROR` | 503 | "Connection failed" | Network/DNS failure | Yes |
+
+**Retry Strategy:**
+- **Retryable Errors:** API_TIMEOUT, RATE_LIMIT_EXCEEDED, OPENAI_API_ERROR, NETWORK_ERROR
+- **Non-Retryable Errors:** INVALID_ORIGIN, MISSING_FIELDS, INVALID_API_KEY
+- **Exponential Backoff:** Client-side responsibility (worker returns retryable error code)
+
+### Performance Architecture
+
+**Latency Budget (NFR-I5):**
+- **Cloudflare Worker Processing:** <50ms (routing, validation, response formatting)
+- **OpenAI API Call:** Variable (typically 500ms-2000ms for simple prompts)
+- **Total Client-Perceived Latency:** Worker overhead + OpenAI latency
+- **Target:** <500ms worker overhead (well within NFR-I5 requirement)
+
+**Optimization Techniques:**
+- **Connection Pooling:** Cloudflare automatically pools HTTP connections to OpenAI
+- **Edge Caching:** Not applicable (API responses are dynamic, user-specific)
+- **Cold Start Mitigation:** Worker is "always warm" due to Cloudflare's edge infrastructure
+- **Response Streaming:** Not used (complete response required for error handling)
+
+**Monitoring & Observability:**
+- **Cloudflare Analytics:** Built-in request count, error rate, latency metrics
+- **Logging:** Use `console.log()` for development (visible in Wrangler dev mode)
+- **Production Logging:** Cloudflare Workers Logs (optional, paid feature)
+- **MVP Approach:** Manual testing and Cloudflare dashboard metrics only
+
+### Configuration Architecture
+
+**wrangler.toml Structure:**
+```toml
+name = "digitalwave-test-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+ALLOWED_ORIGINS = "http://localhost:*,http://127.0.0.1:*"
+
+# Secrets (not in wrangler.toml):
+# npx wrangler secret put OPENAI_API_KEY
+```
+
+**Environment-Specific Configuration:**
+
+| Environment | ALLOWED_ORIGINS | OPENAI_API_KEY | Deployment |
+|-------------|-----------------|----------------|------------|
+| Development | `http://localhost:*` | `.dev.vars` file | `npx wrangler dev` |
+| Production | `https://username.github.io` | Cloudflare Secret | `npx wrangler deploy` |
+
+**Configuration Management:**
+- **Version Control:** `wrangler.toml` committed to git (non-sensitive config)
+- **Secrets:** `.dev.vars` excluded via `.gitignore`
+- **Environment Variables:** Accessible in worker via `env.VARIABLE_NAME`
+- **Secret Access:** `env.OPENAI_API_KEY` (only accessible at runtime, never logged)
+
+### Deployment Architecture
+
+**Development Workflow:**
+```bash
+# 1. Install dependencies
+npm install -g wrangler
+
+# 2. Authenticate
+npx wrangler login
+
+# 3. Initialize worker project
+npx wrangler init
+
+# 4. Configure secrets (local)
+echo "OPENAI_API_KEY=sk-..." > .dev.vars
+
+# 5. Local development
+npx wrangler dev
+# Worker available at http://localhost:8787
+
+# 6. Test locally
+curl http://localhost:8787/api/chat \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "test"}'
+```
+
+**Production Deployment:**
+```bash
+# 1. Configure production secrets
+npx wrangler secret put OPENAI_API_KEY
+# Enter API key when prompted
+
+# 2. Deploy to Cloudflare
+npx wrangler deploy
+
+# 3. Worker URL
+# https://digitalwave-test-proxy.username.workers.dev
+
+# 4. Test production endpoint
+curl https://digitalwave-test-proxy.username.workers.dev/api/chat \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "test"}'
+```
+
+**Rollback Strategy:**
+- **Git Version Control:** Revert `worker.js` commit and redeploy
+- **Cloudflare Versioning:** Automatic (wrangler deploys as new version, can rollback)
+- **Zero Downtime:** Cloudflare gradually shifts traffic (instant rollback available)
+
+### Integration Architecture
+
+**Client-Worker Integration:**
+
+**Client-side constants (index.html):**
+```javascript
+const WORKER_URL = 'https://digitalwave-test-proxy.username.workers.dev';
+
+async function callChatAPI(prompt) {
+  const response = await fetch(`${WORKER_URL}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
+  });
+
+  const result = await response.json();
+
+  if (!result.success) {
+    throw new Error(result.error.message);
+  }
+
+  return result.data.message;
+}
+```
+
+**Worker-OpenAI Integration:**
+- **Protocol:** HTTPS (TLS 1.3)
+- **Authentication:** Bearer token (API key in `Authorization` header)
+- **Request Format:** JSON (OpenAI API specification)
+- **Response Parsing:** Extract `choices[0].message.content`
+- **Error Handling:** Parse `error.code` from OpenAI response
+
+### Testing Architecture
+
+**Local Development Testing:**
+```bash
+# Test CORS preflight
+curl -X OPTIONS http://localhost:8787/api/chat \
+  -H "Origin: http://localhost:3000" \
+  -H "Access-Control-Request-Method: POST"
+
+# Test chat endpoint
+curl -X POST http://localhost:8787/api/chat \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:3000" \
+  -d '{"prompt": "Write a haiku"}'
+
+# Test improvement endpoint
+curl -X POST http://localhost:8787/api/improve \
+  -H "Content-Type: application/json" \
+  -H "Origin: http://localhost:3000" \
+  -d '{"originalPrompt": "write code", "userFeedback": "too vague"}'
+```
+
+**Production Testing:**
+```bash
+# Test production endpoint
+npx wrangler tail --format pretty
+# Watch live logs from deployed worker
+
+# Run production curl tests
+curl https://digitalwave-test-proxy.username.workers.dev/api/chat \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "test"}'
+```
+
+**Error Scenario Testing:**
+1. **Invalid Origin:** Request from unauthorized domain → 403 error
+2. **Missing Fields:** Request without `prompt` field → 400 error
+3. **Invalid API Key:** Deploy worker with invalid secret → 500 error
+4. **Rate Limit:** Exceed OpenAI limits → 429 error (retryable)
+5. **Network Timeout:** Simulate slow OpenAI response → 504 error
+
+### Maintenance & Operations
+
+**Monitoring Checklist:**
+- [ ] Check Cloudflare Dashboard for error rates
+- [ ] Monitor request volume (100,000/day free tier limit)
+- [ ] Review OpenAI API usage and costs
+- [ ] Validate origin whitelist for production
+
+**Debugging Tools:**
+- **Wrangler Dev Mode:** `npx wrangler dev` (local testing with live logs)
+- **Wrangler Tail:** `npx wrangler tail` (production log streaming)
+- **Cloudflare Dashboard:** Analytics, logs, deployment history
+- **Browser DevTools:** Network tab for client-side debugging
+
+**Common Issues & Resolutions:**
+
+| Issue | Symptom | Resolution |
+|-------|---------|------------|
+| CORS error | "No 'Access-Control-Allow-Origin' header" | Check CORS handler, verify OPTIONS preflight |
+| Invalid origin | 403 Unauthorized | Update ALLOWED_ORIGINS in wrangler.toml |
+| API key not found | 500 error with missing secret | Run `npx wrangler secret put OPENAI_API_KEY` |
+| Timeout errors | Requests taking >10s | Increase timeout or optimize prompt size |
+| High costs | Unexpected OpenAI charges | Monitor usage, implement rate limiting |
+
+### Architecture Compliance
+
+**Requirements Mapping:**
+
+✅ **NFR-S1 (API Key Protection):**
+- API key stored as Cloudflare Secret
+- Never exposed to client
+- Encrypted at rest and in transit
+
+✅ **NFR-S3 (Origin Validation):**
+- ALLOWED_ORIGINS configuration
+- Origin validation before API calls
+- Development vs. production configuration
+
+✅ **NFR-I5 (Worker Latency Overhead):**
+- <500ms overhead target
+- Efficient request routing
+- Minimal processing logic
+
+✅ **NFR-I6 (CORS Handling):**
+- Automatic CORS preflight handling
+- Wildcard CORS for GitHub Pages
+- Proper headers injection
+
+✅ **NFR-I7 (Error Response Format):**
+- Standardized { success, data, error } structure
+- Machine-readable error codes
+- User-friendly error messages
+
 ---
 
 **Architecture Status:** READY FOR IMPLEMENTATION ✅

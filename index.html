@@ -80,6 +80,209 @@
     .error-boundary__button:hover {
       opacity: 0.9;
     }
+
+    /* Chat Interface Component */
+    .chat-interface {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - calc(var(--spacing-unit) * 8));
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    /* Message List Component */
+    .chat-interface__message-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: calc(var(--spacing-unit) * 3);
+      display: flex;
+      flex-direction: column;
+      gap: calc(var(--spacing-unit) * 2);
+    }
+
+    .chat-interface__empty-state {
+      text-align: center;
+      color: #999;
+      padding: calc(var(--spacing-unit) * 8) calc(var(--spacing-unit) * 4);
+      font-size: 16px;
+    }
+
+    /* Message Bubble Component */
+    .chat-interface__message {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: calc(var(--spacing-unit) * 2);
+    }
+
+    .chat-interface__message--sent {
+      align-items: flex-end;
+    }
+
+    .chat-interface__message--received {
+      align-items: flex-start;
+    }
+
+    .chat-interface__message-content {
+      max-width: 70%;
+      padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3);
+      border-radius: calc(var(--spacing-unit) * 2);
+      word-wrap: break-word;
+      line-height: 1.5;
+    }
+
+    .chat-interface__message--sent .chat-interface__message-content {
+      background-color: var(--color-primary);
+      color: #ffffff;
+    }
+
+    .chat-interface__message--received .chat-interface__message-content {
+      background-color: #f0f0f0;
+      color: var(--color-text);
+    }
+
+    /* Input Container */
+    .chat-interface__input-container {
+      padding: calc(var(--spacing-unit) * 3);
+      border-top: 1px solid #e0e0e0;
+      background-color: #ffffff;
+    }
+
+    /* Chat Input Form */
+    .chat-interface__input-form {
+      display: flex;
+      gap: calc(var(--spacing-unit) * 2);
+      align-items: center;
+    }
+
+    /* Input Field */
+    .chat-interface__input-field {
+      flex: 1;
+      padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3);
+      border: 2px solid #e0e0e0;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .chat-interface__input-field:focus {
+      border-color: var(--color-primary);
+    }
+
+    .chat-interface__input-field:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+    }
+
+    /* Button Component */
+    .chat-interface__button {
+      padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 4);
+      background-color: var(--color-primary);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .chat-interface__button:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    .chat-interface__button--disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .chat-interface__button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Validation Error (Story 1.5) */
+    .chat-interface__validation-error {
+      padding: calc(var(--spacing-unit) * 1) calc(var(--spacing-unit) * 2);
+      margin-top: calc(var(--spacing-unit) * 1);
+      background-color: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: var(--border-radius);
+    }
+
+    .chat-interface__validation-message {
+      color: #856404;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    /* Error Display (Story 1.5) */
+    .chat-interface__error-display {
+      padding: calc(var(--spacing-unit) * 2) calc(var(--spacing-unit) * 3);
+      margin-bottom: calc(var(--spacing-unit) * 2);
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: var(--border-radius);
+      display: flex;
+      align-items: center;
+      gap: calc(var(--spacing-unit) * 2);
+    }
+
+    .chat-interface__error-message {
+      color: #721c24;
+      font-size: 14px;
+      margin: 0;
+      flex: 1;
+    }
+
+    .chat-interface__retry-button {
+      padding: var(--spacing-unit) calc(var(--spacing-unit) * 2);
+      background-color: var(--color-primary);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .chat-interface__retry-button:hover {
+      opacity: 0.9;
+    }
+
+    /* Story 2.1: "Not Satisfied" button styling */
+    .message-bubble__not-satisfied {
+      margin-top: calc(var(--spacing-unit) * 1);
+      padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+      background-color: transparent;
+      border: 1px solid var(--color-primary);
+      color: var(--color-primary);
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.1s ease-in-out;
+    }
+
+    .message-bubble__not-satisfied:hover:not(:disabled) {
+      background-color: var(--color-primary);
+      color: #ffffff;
+      opacity: 0.9;
+    }
+
+    .message-bubble__not-satisfied:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: transparent;
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
   </style>
 </head>
 <body>
@@ -90,19 +293,129 @@
     // SECTION 1: CONSTANTS & CONFIGURATION
     // ============================================================
 
+    // API Configuration
+    const WORKER_URL = 'https://digitalwave-test-proxy.x-gs-x.workers.dev';
+    const CHAT_SYSTEM_PROMPT = 
+      `You are a helpful assistant. Respond to user prompts naturally.
+
+      You can ONLY assist with product name generation based on the packaging options below. 
+      If the user asks about anything else, politely decline and redirect them to select a 
+      packaging option for name generation.
+
+      ## Task
+      You are testing a product name generation system. The user will select one of four 
+      product packaging options below. Based on the packaging description, generate an 
+      appropriate product name.
+
+      ## Available Product Packaging Options
+
+      **Option 1 - Condiment Packet:**
+      A single-serve foil condiment packet containing ketchup. The packaging features a 
+      patriotic red, white, and blue color scheme with a triangular flag-inspired graphic 
+      containing stars. The design includes a charitable cause partnership badge and 
+      ingredient information printed on the side. The overall aesthetic suggests 
+      American-made, family-values branding.
+
+      **Option 2 - Dairy Carton:**
+      A gable-top cardboard milk carton with a blue plastic screw cap. The design uses a 
+      blue and white color palette with stylized milk splash graphics. Features include a 
+      "Natural" diagonal ribbon banner, a circular quality seal badge, and fresh dairy 
+      imagery. The typography is clean and modern with rounded lettering.
+
+      **Option 3 - Beverage Cans (Variety Pack):**
+      A set of three aluminum soda cans marketed as a healthier alternative. Features 
+      retro-style curved script typography as the main logo. Flavors shown: a dark red 
+      cola-style variant, a pink cherry cola, and an orange root beer with a float 
+      illustration. Each can displays health claims including prebiotics, vitamins, 
+      minerals, low sugar content (5-6g), and NON-GMO certification.
+
+      **Option 4 - Cheese Product:**
+      Processed cheese slices in a blue plastic and cardboard package. Contains 12 
+      individually wrapped slices, 200g total weight. The packaging shows a burger 
+      photograph demonstrating product usage. Multilingual text appears in Arabic, English, 
+      and Spanish. The brand logo uses a simple, friendly rounded typeface in a dark blue 
+      oval.`;
+    const API_TIMEOUT = 10000; // 10 seconds
+    const MAX_PROMPT_LENGTH = 2000;
+
     // ============================================================
     // SECTION 2: UTILITY FUNCTIONS
     // ============================================================
+
+    // Error formatting utility - maps technical errors to user-friendly messages
+    // Returns error object: { message, code }
+    function formatError(error) {
+      const errorMessages = {
+        'API_TIMEOUT': 'The request took too long. Please try again.',
+        'RATE_LIMIT_EXCEEDED': 'We\'re experiencing high demand. Please wait a moment and try again.',
+        'INVALID_API_KEY': 'Service configuration error. Please contact support.',
+        'NETWORK_ERROR': 'Connection issue. Please check your internet and try again.',
+        'UNKNOWN': 'Something went wrong. Please try again.'
+      };
+
+      const code = error.code || 'UNKNOWN';
+      return {
+        message: errorMessages[code] || errorMessages.UNKNOWN,
+        code: code
+      };
+    }
+
+    // Chat API integration - calls Cloudflare Worker proxy
+    // Returns: Promise with AI response message
+    // Throws: Formatted error object with code and message
+    async function callChatAPI(userPrompt) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+        const response = await fetch(`${WORKER_URL}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: userPrompt }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error?.message || 'API call failed');
+        }
+
+        return result.data.message;
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          throw formatError({ code: 'API_TIMEOUT' });
+        }
+        throw formatError(error);
+      }
+    }
 
     // ============================================================
     // SECTION 3: CUSTOM HOOKS
     // ============================================================
 
+    // AC #7: useAppContext custom hook with null safety check
+    // Note: This hook references AppContext defined in SECTION 5.
+    // This works due to JavaScript hoisting and is intentional pattern for hooks.
+    const useAppContext = () => {
+      const context = React.useContext(AppContext);
+      if (context === null) {
+        throw new Error('useAppContext must be used within an AppProvider');
+      }
+      return context;
+    };
+
     // ============================================================
     // SECTION 4: REACT COMPONENTS
     // ============================================================
 
-    // ErrorBoundary - Class component for catching React errors
+    // ErrorBoundary - Class component for catching React errors (must be first)
     class ErrorBoundary extends React.Component {
       constructor(props) {
         super(props);
@@ -140,9 +453,375 @@
       }
     }
 
+    // LEAF COMPONENTS (defined first)
+
+    // Button - Reusable button component with disabled state
+    // AC #1: Button component with children, onClick, disabled, className props
+    const Button = ({ children, onClick, disabled = false, className = '' }) => {
+      const baseClass = 'chat-interface__button';
+      const modifierClass = disabled ? 'chat-interface__button--disabled' : '';
+      const combinedClassName = `${baseClass} ${modifierClass} ${className}`.trim().replace(/\s+/g, ' ');
+
+      return (
+        <button
+          className={combinedClassName}
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {children}
+        </button>
+      );
+    };
+
+    // ValidationError - Display validation error messages (Story 1.5)
+    // Leaf component for inline validation feedback
+    // Memoized to prevent unnecessary re-renders
+    const ValidationError = React.memo(({ error }) => {
+      if (!error) return null;
+
+      return (
+        <div className="chat-interface__validation-error">
+          <p className="chat-interface__validation-message">{error.message}</p>
+        </div>
+      );
+    });
+
+    // ErrorDisplay - Display API error messages with retry button (Story 1.5)
+    // Leaf component for API error feedback
+    // Memoized to prevent unnecessary re-renders
+    const ErrorDisplay = React.memo(({ error, onRetry }) => {
+      if (!error) return null;
+
+      const isRetriable = ['API_TIMEOUT', 'NETWORK_ERROR', 'RATE_LIMIT_EXCEEDED'].includes(error.code);
+
+      return (
+        <div className="chat-interface__error-display">
+          <p className="chat-interface__error-message">{error.message}</p>
+          {isRetriable && onRetry && (
+            <Button onClick={onRetry} className="chat-interface__retry-button">
+              Try Again
+            </Button>
+          )}
+        </div>
+      );
+    });
+
+    // MessageBubble - Display individual chat message with role-based styling
+    // AC #2: MessageBubble component with message object and type prop
+    // Story 2.1: Added showNotSatisfiedButton, onNotSatisfied, disabled props for "Not Satisfied" button
+    const MessageBubble = ({ message, type, showNotSatisfiedButton, onNotSatisfied, disabled }) => {
+      const typeClass = type === 'sent' ? 'chat-interface__message--sent' : 'chat-interface__message--received';
+      const isAI = message.role === 'assistant';
+
+      return (
+        <div className={`chat-interface__message ${typeClass}`}>
+          <div className="chat-interface__message-content">
+            {message.content}
+          </div>
+          {/* Story 2.1: Conditionally render "Not Satisfied" button on AI messages (outside content div for proper spacing) */}
+          {showNotSatisfiedButton && isAI && (
+            <button
+              className="message-bubble__not-satisfied"
+              onClick={onNotSatisfied}
+              disabled={disabled}
+            >
+              Not Satisfied
+            </button>
+          )}
+        </div>
+      );
+    };
+
+    // COMPOSITE COMPONENTS (defined after leaf)
+
+    // MessageList - Display list of chat messages with auto-scroll
+    // AC #3: MessageList component with auto-scroll and empty state
+    // Story 2.1: Added mostRecentAIMessage, onNotSatisfied, isFeedbackModalOpen props for "Not Satisfied" button
+    const MessageList = ({ messages, mostRecentAIMessage, onNotSatisfied, isFeedbackModalOpen }) => {
+      const messagesEndRef = React.useRef(null);
+
+      // Auto-scroll to bottom when messages change
+      React.useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, [messages]);
+
+      if (messages.length === 0) {
+        return (
+          <div className="chat-interface__message-list">
+            <div className="chat-interface__empty-state">
+              No messages yet. Start by entering a prompt.
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="chat-interface__message-list">
+          {messages.map((message, index) => {
+            const isMostRecentAI = mostRecentAIMessage && message === mostRecentAIMessage;
+
+            return (
+              <MessageBubble
+                key={index}
+                message={message}
+                type={message.role === 'user' ? 'sent' : 'received'}
+                showNotSatisfiedButton={isMostRecentAI}
+                onNotSatisfied={onNotSatisfied}
+                disabled={isFeedbackModalOpen}
+              />
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </div>
+      );
+    };
+
+    // ChatInput - Input field with send button
+    // AC #4: ChatInput component with onSubmit and isLoading props
+    const ChatInput = ({ onSubmit, isLoading = false }) => {
+      const { validationError, setValidationError } = useAppContext();
+      const [inputValue, setInputValue] = React.useState('');
+      const inputRef = React.useRef(null);
+
+      // Optimize handleChange with useCallback to prevent unnecessary re-renders
+      const handleChange = React.useCallback((e) => {
+        setInputValue(e.target.value);
+        // Clear validation error when user starts typing
+        if (validationError && e.target.value.trim()) {
+          setValidationError(null);
+        }
+      }, [validationError, setValidationError]);
+
+      // Optimize handleSubmit with useCallback
+      const handleSubmit = React.useCallback((e) => {
+        e.preventDefault();
+
+        // Validation: Empty input
+        if (!inputValue.trim()) {
+          setValidationError({ message: 'Please enter a prompt', code: 'EMPTY_INPUT' });
+          inputRef.current?.focus();
+          return;
+        }
+
+        // Validation: Maximum length
+        if (inputValue.length > MAX_PROMPT_LENGTH) {
+          setValidationError({ message: 'Prompt is too long. Maximum 2000 characters.', code: 'MAX_LENGTH_EXCEEDED' });
+          return;
+        }
+
+        const userPrompt = inputValue.trim();
+        setInputValue(''); // Clear input (FR6)
+
+        // Call parent's onSubmit handler with the prompt
+        onSubmit(userPrompt);
+      }, [inputValue, setValidationError, onSubmit]);
+
+      return (
+        <>
+          <form className="chat-interface__input-form" onSubmit={handleSubmit}>
+            <input
+              ref={inputRef}
+              className="chat-interface__input-field"
+              type="text"
+              value={inputValue}
+              onChange={handleChange}
+              placeholder="Enter your prompt..."
+              disabled={isLoading}
+            />
+            <Button
+              onClick={handleSubmit}
+              disabled={isLoading || !inputValue.trim()}
+            >
+              {isLoading ? 'Sending...' : 'Send'}
+            </Button>
+          </form>
+          {validationError && <ValidationError error={validationError} />}
+        </>
+      );
+    };
+
+    // LAYOUT COMPONENT (defined last)
+
+    // ChatInterface - Main chat layout with message list and input
+    // AC #5: ChatInterface component using useAppContext
+    // Story 2.1: Added logic to find most recent AI message and handle "Not Satisfied" button
+    const ChatInterface = () => {
+      const { chatHistory, isChatLoading, chatError, addMessage, setChatError, setIsChatLoading, setValidationError, isFeedbackModalOpen, setIsFeedbackModalOpen, setRecentFeedback } = useAppContext();
+      const [pendingPrompt, setPendingPrompt] = React.useState(null);
+
+      // Story 2.1: Find most recent AI response for "Not Satisfied" button
+      const getMostRecentAIMessage = React.useCallback(() => {
+        const aiMessages = chatHistory.filter(msg => msg.role === 'assistant');
+        return aiMessages.length > 0 ? aiMessages[aiMessages.length - 1] : null;
+      }, [chatHistory]);
+
+      const mostRecentAIMessage = getMostRecentAIMessage();
+
+      // Story 2.1: Handle "Not Satisfied" button click
+      // Stores the message context (prompt and response) for the feedback modal (Story 2.2)
+      const handleNotSatisfied = React.useCallback(() => {
+        // Find the user prompt that corresponds to this AI response
+        const messageIndex = chatHistory.findIndex(msg => msg === mostRecentAIMessage);
+        const userPrompt = messageIndex > 0 ? chatHistory[messageIndex - 1] : null;
+
+        // Store feedback context for Story 2.2 modal
+        setRecentFeedback({
+          userPrompt: userPrompt?.content || '',
+          aiResponse: mostRecentAIMessage?.content || '',
+          timestamp: new Date().toISOString()
+        });
+
+        setIsFeedbackModalOpen(true);
+      }, [mostRecentAIMessage, chatHistory, setRecentFeedback, setIsFeedbackModalOpen]);
+
+      // API integration submit handler - Story 1.4 implementation with retry support
+      // Optimized with useCallback to prevent unnecessary re-renders
+      const handleSubmit = React.useCallback(async (userPrompt) => {
+        try {
+          // Store prompt for potential retry
+          setPendingPrompt(userPrompt);
+
+          // Add user message to chat history
+          addMessage({ role: 'user', content: userPrompt });
+
+          // Clear validation and error on new submission
+          setValidationError(null);
+          setChatError(null);
+
+          // Set loading state
+          setIsChatLoading(true);
+
+          // Call API
+          const aiResponse = await callChatAPI(userPrompt);
+
+          // Add AI response to chat history
+          addMessage({ role: 'assistant', content: aiResponse });
+
+          // Clear error on success
+          setChatError(null);
+          setPendingPrompt(null);
+        } catch (error) {
+          // Set error object for display
+          setChatError(error);
+          console.error('API call failed:', error.message);
+        } finally {
+          // Always clear loading state
+          setIsChatLoading(false);
+        }
+      }, [addMessage, setChatError, setIsChatLoading, setValidationError]);
+
+      // Optimize handleRetry with useCallback
+      const handleRetry = React.useCallback(async () => {
+        if (pendingPrompt) {
+          setChatError(null); // Clear error before retry
+          await handleSubmit(pendingPrompt);
+        }
+      }, [pendingPrompt, setChatError, handleSubmit]);
+
+      return (
+        <div className="chat-interface">
+          <MessageList
+            messages={chatHistory}
+            mostRecentAIMessage={mostRecentAIMessage}
+            onNotSatisfied={handleNotSatisfied}
+            isFeedbackModalOpen={isFeedbackModalOpen}
+          />
+          {chatError && <ErrorDisplay error={chatError} onRetry={handleRetry} />}
+          <div className="chat-interface__input-container">
+            <ChatInput onSubmit={handleSubmit} isLoading={isChatLoading} />
+          </div>
+        </div>
+      );
+    };
+
     // ============================================================
     // SECTION 5: CONTEXT PROVIDER
     // ============================================================
+
+    // AppContext - Global application state
+    const AppContext = React.createContext(null);
+
+    // AC #2: AppProvider component with useState hooks and context value
+    const AppProvider = ({ children }) => {
+      // AC #1: Complete state structure
+      // Chat state
+      const [chatHistory, setChatHistory] = React.useState([]);
+      const [isChatLoading, setIsChatLoading] = React.useState(false);
+      const [chatError, setChatError] = React.useState(null);
+
+      // Story 1.5: Validation state
+      const [validationError, setValidationError] = React.useState(null);
+
+      // Modal states
+      const [isFeedbackModalOpen, setIsFeedbackModalOpen] = React.useState(false);
+      const [isComparisonModalOpen, setIsComparisonModalOpen] = React.useState(false);
+      const [comparisonData, setComparisonData] = React.useState(null);
+
+      // Improvement state
+      const [isGeneratingImprovement, setIsGeneratingImprovement] = React.useState(false);
+      const [improvementError, setImprovementError] = React.useState(null);
+
+      // Feedback context
+      const [recentFeedback, setRecentFeedback] = React.useState(null);
+
+      // AC #3: Immutable state update helpers
+      const addMessage = (message) => {
+        setChatHistory(prev => [...prev, message]);
+      };
+
+      const clearChat = () => {
+        setChatHistory([]);
+        setChatError(null);
+        setRecentFeedback(null);
+        setComparisonData(null);
+      };
+
+      // Memoize context value to prevent unnecessary re-renders
+      const value = React.useMemo(() => ({
+        // State values
+        chatHistory,
+        isChatLoading,
+        chatError,
+        validationError,
+        isFeedbackModalOpen,
+        isComparisonModalOpen,
+        comparisonData,
+        isGeneratingImprovement,
+        improvementError,
+        recentFeedback,
+        // State updaters
+        setChatHistory,
+        setIsChatLoading,
+        setChatError,
+        setValidationError,
+        setIsFeedbackModalOpen,
+        setIsComparisonModalOpen,
+        setComparisonData,
+        setIsGeneratingImprovement,
+        setImprovementError,
+        setRecentFeedback,
+        // Helper functions
+        addMessage,
+        clearChat
+      }), [
+        chatHistory,
+        isChatLoading,
+        chatError,
+        validationError,
+        isFeedbackModalOpen,
+        isComparisonModalOpen,
+        comparisonData,
+        isGeneratingImprovement,
+        improvementError,
+        recentFeedback
+      ]);
+
+      return (
+        <AppContext.Provider value={value}>
+          {children}
+        </AppContext.Provider>
+      );
+    };
 
     // ============================================================
     // SECTION 6: MAIN APP COMPONENT
@@ -150,7 +829,7 @@
     const App = () => {
       return (
         <div className="app-container">
-          <h1 className="app-container__title">DigitalWaveTest</h1>
+          <ChatInterface />
         </div>
       );
     };
@@ -160,9 +839,11 @@
     // ============================================================
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
+      <AppProvider>
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
+      </AppProvider>
     );
   </script>
 </body>

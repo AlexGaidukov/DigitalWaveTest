@@ -2,11 +2,12 @@
 project_name: 'DigitalWaveTest'
 user_name: 'Alexgaidukov'
 date: '2026-01-04'
-sections_completed: ['technology_stack', 'implementation_rules', 'usage_guidelines']
-existing_patterns_found: 7
+sections_completed: ['technology_stack', 'implementation_rules', 'cloudflare_worker_architecture', 'usage_guidelines']
+existing_patterns_found: 9
 status: 'complete'
-rule_count: 25
+rule_count: 30
 optimized_for_llm: true
+includes_infrastructure: true
 ---
 
 # Project Context for AI Agents
@@ -23,14 +24,50 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - OpenAI API (GPT-3.5-turbo) via Cloudflare Workers proxy
 
 **Architecture:**
-- Single HTML file (`index.html`) - ALL code in one file
+- Single HTML file (`index.html`) - ALL client code in one file
+- Cloudflare Worker (`cloudflare-worker/`) - Serverless API proxy
 - No build process, no bundlers, no package.json
 - In-memory state only (no persistence for MVP)
 - Desktop-only (no responsive design)
 
+**Project Structure:**
+```
+DigitalWaveTest/
+├── index.html                    # Complete React application (single file)
+├── cloudflare-worker/            # API proxy deployment (Story 1.0)
+│   ├── worker.js                 # Cloudflare Worker code
+│   ├── wrangler.toml             # Worker configuration
+│   └── .dev.vars                 # Local environment variables (gitignored)
+├── README.md                     # Project documentation
+└── .gitignore                    # Git ignore rules
+```
+
 **Deployment:**
-- GitHub Pages (static hosting)
-- Cloudflare Workers (API proxy)
+- GitHub Pages (static hosting for frontend)
+- Cloudflare Workers (serverless API proxy)
+
+**Cloudflare Worker Development:**
+```bash
+# Local development
+npx wrangler dev  # Runs at http://localhost:8787
+
+# Test local worker
+curl http://localhost:8787/api/chat \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "test"}'
+```
+
+**Cloudflare Worker Deployment:**
+```bash
+# Set production secret
+npx wrangler secret put OPENAI_API_KEY
+
+# Deploy to production
+npx wrangler deploy
+
+# Worker URL: https://digitalwave-test-proxy.*.workers.dev
+```
 
 **Browser Requirements:**
 - Modern browsers with ES6+ support
@@ -106,6 +143,30 @@ setChatHistory(chatHistory);
 - Worker URL constant: `WORKER_URL`
 - No API keys in client code (security violation)
 
+**Cloudflare Worker Architecture:**
+- **Story:** 1.0 - Cloudflare Worker Implementation (MUST be completed before client-side API integration)
+- **Purpose:** Secure API proxy that protects OpenAI API keys
+- **Endpoints:**
+  - `/api/chat` - For chat testing (POST request with `{ prompt: string }`)
+  - `/api/improve` - For prompt improvement (POST request with `{ originalPrompt, userFeedback }`)
+- **Development URL:** `http://localhost:8787` (Wrangler dev server)
+- **Production URL:** `https://digitalwave-test-proxy.*.workers.dev` (deployed worker)
+
+**Worker Configuration:**
+```toml
+name = "digitalwave-test-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+ALLOWED_ORIGINS = "http://localhost:*,http://127.0.0.1:*"
+```
+
+**Secret Management:**
+- **Production:** Store `OPENAI_API_KEY` via `npx wrangler secret put OPENAI_API_KEY`
+- **Development:** Store in `.dev.vars` file (gitignored)
+- **Security:** API keys encrypted at rest, never logged, never exposed to client
+
 **API Response Structure:**
 ```javascript
 {
@@ -114,6 +175,15 @@ setChatHistory(chatHistory);
   error?: { code: string, message: string, details: string }
 }
 ```
+
+**Worker Error Codes:**
+- `INVALID_ORIGIN` - Request from unauthorized domain
+- `MISSING_FIELDS` - Required field missing
+- `API_TIMEOUT` - Request exceeded timeout
+- `RATE_LIMIT_EXCEEDED` - OpenAI rate limit hit
+- `INVALID_API_KEY` - Service configuration error
+- `OPENAI_API_ERROR` - OpenAI returned error
+- `NETWORK_ERROR` - Connection failed
 
 ### Component Communication Patterns
 
@@ -238,3 +308,9 @@ fetch(`${WORKER_URL}/api/chat`, { body: JSON.stringify(data) });
 **File Location:** `_bmad-output/project-context.md`
 
 **Status:** Ready for AI Agent Integration ✅
+
+**Infrastructure Status:**
+- ✅ Story 1.0 (Cloudflare Worker) added to Epic 1
+- ✅ Architecture documentation updated with Worker details
+- ✅ Project context includes Worker deployment patterns
+- ⚠️  Worker implementation REQUIRED before client-side API integration (Stories 1.4+)

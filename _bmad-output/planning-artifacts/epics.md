@@ -372,6 +372,193 @@ Users can apply improved prompts with one-click action, test them immediately to
 
 ## Epic 1: Interactive Chat Testing
 
+### Story 1.0: Cloudflare Worker Implementation
+
+As a developer,
+I want to deploy a Cloudflare Worker that proxies requests to the OpenAI API,
+So that API keys are never exposed in client-side code and all API calls are secure.
+
+**Acceptance Criteria:**
+
+**Given** I have a Cloudflare account and Wrangler installed,
+**When** I create and deploy the Cloudflare Worker,
+**Then** the following infrastructure should be in place:
+
+**Project Setup:**
+1. Create `cloudflare-worker/` directory in project root
+2. Initialize Cloudflare Worker project: `npx wrangler init`
+3. Create `worker.js` file with proxy logic
+4. Create `wrangler.toml` configuration file
+5. Create `.dev.vars` file for local development (gitignored)
+
+**Worker Configuration (`wrangler.toml`):**
+```toml
+name = "digitalwave-test-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+ALLOWED_ORIGINS = "http://localhost:*,http://127.0.0.1:*"
+```
+
+**Environment Variables:**
+- **Production:** Store `OPENAI_API_KEY` as Cloudflare Secret: `npx wrangler secret put OPENAI_API_KEY`
+- **Development:** Store in `.dev.vars` file (never committed to git)
+- **Update `.gitignore`:** Add `.dev.vars` to prevent accidental commits
+
+**Worker Implementation (`worker.js`):**
+
+**Request handling:**
+```javascript
+export default {
+  async fetch(request, env, ctx) {
+    // Handle CORS preflight
+    if (request.method === "OPTIONS") {
+      return handleCORS();
+    }
+
+    // Route requests
+    const url = new URL(request.url);
+    const path = url.pathname;
+
+    if (path === "/api/chat") {
+      return handleChatAPI(request, env);
+    } else if (path === "/api/improve") {
+      return handleImprovementAPI(request, env);
+    }
+
+    return new Response("Not Found", { status: 404 });
+  }
+}
+```
+
+**CORS handling:**
+```javascript
+function handleCORS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+```
+
+**Chat endpoint (`/api/chat`):**
+- **Given** POST request to `/api/chat`
+- **When** request body contains `{ prompt: string }`
+- **Then** execute:
+  1. Validate request has `prompt` field
+  2. Validate request origin (NFR-S3)
+  3. Forward to OpenAI API: `https://api.openai.com/v1/chat/completions`
+  4. Use `CHAT_SYSTEM_PROMPT` as system message
+  5. Return standardized response: `{ success: true, data: { message: "..." } }`
+  6. Handle errors: rate limit, auth failure, timeout
+
+**Improvement endpoint (`/api/improve`):**
+- **Given** POST request to `/api/improve`
+- **When** request body contains `{ originalPrompt: string, userFeedback: string }`
+- **Then** execute:
+  1. Validate request has both fields
+  2. Validate request origin (NFR-S3)
+  3. Forward to OpenAI API with `IMPROVEMENT_SYSTEM_PROMPT`
+  4. Request JSON response format from OpenAI
+  5. Return standardized response: `{ success: true, data: { improvedPrompt, mapping, explanations } }`
+  6. Handle errors and return standardized error format
+
+**Error handling:**
+```javascript
+function createErrorResponse(code, message, details) {
+  return new Response(JSON.stringify({
+    success: false,
+    error: {
+      code: code,      // "API_TIMEOUT", "RATE_LIMIT_EXCEEDED", etc.
+      message: message, // User-friendly message
+      details: details  // Technical details for debugging
+    }
+  }), {
+    status: 400,
+    headers: { "Content-Type": "application/json" }
+  });
+}
+```
+
+**Origin validation (NFR-S3):**
+- Extract `Origin` header from request
+- Check against `ALLOWED_ORIGINS` environment variable
+- Reject requests from unauthorized origins with `{ code: "UNAUTHORIZED_ORIGIN", message: "..."}`
+- For production: Update `ALLOWED_ORIGINS` to include GitHub Pages URL
+
+**OpenAI API integration:**
+```javascript
+async function callOpenAIAPI(messages, env) {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      messages: messages,
+      timeout: 15000 // 15 seconds
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenAI API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+```
+
+**Deployment:**
+1. **Given** Worker code is complete and API key is set as secret
+2. **When** I run `npx wrangler deploy`
+3. **Then** Worker should deploy successfully
+4. **And** Output should show deployment URL: `https://digitalwave-test-proxy.*.workers.dev`
+5. **And** Worker should respond to health check at `/`
+6. **And** Worker should handle CORS preflight requests
+
+**Testing:**
+1. **Given** Worker is deployed
+2. **When** I test with curl: `curl -X POST https://worker-url/api/chat -d '{"prompt":"test"}'`
+3. **Then** receive valid JSON response
+4. **And** verify API key is NOT exposed in response
+5. **And** verify CORS headers are present
+
+**Documentation:**
+1. Add Worker deployment instructions to project README.md
+2. Document environment variable setup (OPENAI_API_KEY)
+3. Document local development: `npx wrangler dev`
+4. Document deployment: `npx wrangler deploy`
+5. Document how to update ALLOWED_ORIGINS for production
+
+**Security requirements (NFR-S1 to NFR-S7):**
+- ✅ API key stored as Cloudflare Secret (never in code)
+- ✅ Origin validation prevents unauthorized usage
+- ✅ No user data stored (stateless worker)
+- ✅ Input validation on all endpoints
+- ✅ Maximum prompt length enforcement
+- ✅ Standardized error responses (no technical details leaked)
+
+**Performance requirements (NFR-I5, NFR-I6):**
+- ✅ Worker adds <500ms latency overhead
+- ✅ Standardized error response format
+- ✅ CORS headers properly configured for cross-origin requests
+
+**Frontend integration preparation:**
+- Worker URL should be added to client-side constants: `WORKER_URL`
+- For development: `http://localhost:8787` (Wrangler dev server)
+- For production: Deployed Worker URL
+
+**Requirements fulfilled:** NFR-S1, NFR-S2, NFR-S3, NFR-I1, NFR-I5, NFR-I6, NFR-I7, Architecture requirements 6, 25, 27
+
+---
+
 ### Story 1.1: Project Initialization & HTML Scaffolding
 
 As a developer,
