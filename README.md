@@ -14,13 +14,22 @@ DigitalWave Test helps users improve their prompts through:
 
 ```
 DigitalWaveTest/
-├── index.html                    # Complete React application (single file)
+├── index.html                    # Entry point (27 lines)
+├── styles/                       # CSS stylesheets
+│   └── main.css                  # All application styles
+├── js/                           # JavaScript modules
+│   ├── config.js                 # Configuration constants
+│   ├── utils.js                  # Utility functions
+│   ├── components.js             # React components
+│   └── app.js                    # Main App component
 ├── cloudflare-worker/            # API proxy deployment
 │   ├── worker.js                 # Cloudflare Worker code
 │   ├── wrangler.toml             # Worker configuration
 │   └── .dev.vars                 # Local environment variables (gitignored)
 └── README.md                     # This file
 ```
+
+**Note:** The codebase was refactored from a monolithic 3000+ line HTML file into a modular structure on 2026-01-04 for better maintainability.
 
 ## Technology Stack
 
@@ -39,15 +48,31 @@ DigitalWaveTest/
 
 ### 1. Clone and Setup Frontend
 
-The frontend is a single HTML file that runs directly in the browser.
+The frontend uses a modular file structure with CDN-loaded dependencies (no build step required).
 
-1. Open `index.html` in your browser
-2. Or serve it with a local server:
+**IMPORTANT:** Due to browser CORS policies, you must serve the application via HTTP (not `file://` protocol).
+
+1. Start a local HTTP server:
    ```bash
-   python -m http.server 3000
-   # or
-   npx serve
+   # Option 1: Python (built-in on macOS/Linux)
+   python3 -m http.server 8001
+
+   # Option 2: Node.js
+   npx serve .
+
+   # Option 3: VS Code Live Server extension
+   # Right-click index.html → "Open with Live Server"
    ```
+
+2. Open in browser:
+   ```
+   http://localhost:8001/index.html
+   ```
+
+**Why HTTP server is required:**
+- Browser CORS policy blocks loading external JavaScript files from `file://` protocol
+- External scripts (`js/config.js`, `js/utils.js`, etc.) must be served via HTTP
+- This is a security feature of modern browsers
 
 ### 2. Deploy Cloudflare Worker
 
@@ -93,10 +118,10 @@ The Worker proxies requests to OpenAI API, protecting your API keys.
 
 3. Note the deployment URL (e.g., `https://digitalwave-test-proxy.abc123.workers.dev`)
 
-4. Update `index.html` with your Worker URL:
+4. Update `js/config.js` with your Worker URL:
    ```javascript
-   // In SECTION 1: CONSTANTS
-   const WORKER_URL = "https://digitalwave-test-proxy.abc123.workers.dev";
+   // Update the WORKER_URL constant
+   const WORKER_URL = 'https://digitalwave-test-proxy.abc123.workers.dev';
    ```
 
 5. Update ALLOWED_ORIGINS in `cloudflare-worker/wrangler.toml`:

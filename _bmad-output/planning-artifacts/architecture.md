@@ -2375,6 +2375,207 @@ curl https://digitalwave-test-proxy.username.workers.dev/api/chat \
 
 ---
 
+## System Prompts Architecture (Added 2026-01-05)
+
+### Overview
+
+System prompts are externalized to a dedicated configuration file for improved maintainability and version control.
+
+### Configuration File Structure
+
+**Location:** `cloudflare-worker/prompts.js`
+
+**Pattern:** ES6 module with named exports
+
+```javascript
+/**
+ * System prompts configuration for DigitalWave Worker
+ * Centralized location for all AI system prompts
+ */
+
+export const CHAT_SYSTEM_PROMPT = `...`;
+export const IMPROVEMENT_SYSTEM_PROMPT = `...`;
+```
+
+### Import Pattern
+
+**Worker Implementation:**
+
+```javascript
+// cloudflare-worker/worker.js
+import { CHAT_SYSTEM_PROMPT, IMPROVEMENT_SYSTEM_PROMPT } from './prompts.js';
+
+// Usage in handleChatAPI
+const response = await callOpenAIAPI(
+  [{ role: 'user', content: body.prompt }],
+  CHAT_SYSTEM_PROMPT,  // Imported constant
+  env,
+  10000,
+  null,
+  1000
+);
+```
+
+### Prompt Definitions
+
+#### 1. CHAT_SYSTEM_PROMPT
+
+**Purpose:** Guide AI to generate product names based on packaging descriptions
+
+**Used by:** `/api/chat` endpoint
+
+**Content:**
+- Base instruction: Product name generation assistant
+- 4 detailed product packaging descriptions:
+  - Option 1: Condiment Packet (patriotic ketchup)
+  - Option 2: Dairy Carton (milk with natural branding)
+  - Option 3: Beverage Cans (healthier soda variety pack)
+  - Option 4: Cheese Product (processed cheese slices)
+
+**Source:** Migrated from `js/config.js` (was defined but unused)
+
+**Rationale:** Worker was using simplified hardcoded prompt instead of detailed version
+
+#### 2. IMPROVEMENT_SYSTEM_PROMPT
+
+**Purpose:** Restructure user prompts into Task/Rules/Examples format
+
+**Used by:** `/api/improve` endpoint
+
+**Content:**
+- R/T/E framework instructions
+- Section order requirements (Task → Rules → Examples)
+- Sentence parsing guidelines
+- Restructuring rules
+- JSON response format specification
+- Quality checks
+- User feedback integration patterns
+
+**Source:** Migrated from inline definition in worker.js (~125 lines)
+
+**Rationale:** Reduce worker.js file size and improve maintainability
+
+### Deployment Architecture
+
+**Build Configuration:**
+
+```toml
+# cloudflare-worker/wrangler.toml
+[build]
+upload.format = "modules"
+```
+
+**Bundling Process:**
+1. Wrangler detects ES6 imports
+2. Bundles prompts.js with worker.js at build time
+3. No runtime import() calls (all resolved statically)
+4. Single deployment artifact created
+
+**Deployment Command:**
+
+```bash
+wrangler deploy
+```
+
+**Result:**
+- Worker deployed to `https://digitalwave-test-proxy.*.workers.dev`
+- prompts.js included in bundle
+- No additional configuration needed
+
+### Benefits
+
+1. **Maintainability:**
+   - Single source of truth for all AI prompts
+   - Easy to update and iterate on prompts
+   - Clear separation between configuration and logic
+
+2. **Version Control:**
+   - Prompt changes tracked in git history
+   - Easy to diff and review prompt modifications
+   - Can revert to previous prompt versions
+
+3. **Code Quality:**
+   - Removed ~125 lines from worker.js
+   - Eliminated unused code in js/config.js
+   - Better code organization
+
+4. **Functionality:**
+   - Fixed bug where detailed CHAT_SYSTEM_PROMPT was defined but unused
+   - Worker now uses correct detailed prompt for product generation
+
+### Security Considerations
+
+**No Security Impact:**
+- Prompts are not secrets (no sensitive data)
+- Still bundled into worker code (not publicly accessible)
+- Same security posture as inline prompts
+
+**Configuration Management:**
+- Prompts versioned in git
+- No separate secrets management needed
+- Changes require redeployment (expected for config)
+
+### Client Access Pattern
+
+**CRITICAL:** Client code does NOT import prompts directly
+
+**Reason:**
+- All AI calls must go through Worker proxy
+- Prevents direct OpenAI API calls from client
+- Maintains security architecture
+
+**Pattern:**
+
+```javascript
+// ❌ WRONG - Client cannot import prompts
+import { CHAT_SYSTEM_PROMPT } from '../cloudflare-worker/prompts.js';
+
+// ✅ CORRECT - Client calls Worker API
+const response = await callChatAPI(userPrompt);
+// Worker internally uses CHAT_SYSTEM_PROMPT
+```
+
+### Future Extensions
+
+**Adding New Prompts:**
+
+1. Add export to `cloudflare-worker/prompts.js`:
+   ```javascript
+   export const NEW_PROMPT = `...`;
+   ```
+
+2. Import in `worker.js`:
+   ```javascript
+   import { CHAT_SYSTEM_PROMPT, IMPROVEMENT_SYSTEM_PROMPT, NEW_PROMPT } from './prompts.js';
+   ```
+
+3. Use in endpoint handlers:
+   ```javascript
+   await callOpenAIAPI(messages, NEW_PROMPT, env, timeout);
+   ```
+
+4. Deploy:
+   ```bash
+   wrangler deploy
+   ```
+
+**A/B Testing Prompts:**
+
+Create variations and switch based on environment:
+
+```javascript
+// prompts.js
+export const CHAT_SYSTEM_PROMPT_V1 = `...`;
+export const CHAT_SYSTEM_PROMPT_V2 = `...`;
+
+// worker.js
+const prompt = env.PROMPT_VERSION === 'v2'
+  ? CHAT_SYSTEM_PROMPT_V2
+  : CHAT_SYSTEM_PROMPT_V1;
+```
+
+---
+
 **Architecture Status:** READY FOR IMPLEMENTATION ✅
 
 **Next Phase:** Begin implementation using the architectural decisions and patterns documented herein.

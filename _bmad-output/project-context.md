@@ -24,7 +24,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - OpenAI API (GPT-3.5-turbo) via Cloudflare Workers proxy
 
 **Architecture:**
-- Single HTML file (`index.html`) - ALL client code in one file
+- Modular file structure - Refactored from monolithic single file (2026-01-04)
 - Cloudflare Worker (`cloudflare-worker/`) - Serverless API proxy
 - No build process, no bundlers, no package.json
 - In-memory state only (no persistence for MVP)
@@ -33,8 +33,16 @@ _This file contains critical rules and patterns that AI agents must follow when 
 **Project Structure:**
 ```
 DigitalWaveTest/
-├── index.html                    # Complete React application (single file)
+├── index.html                    # Entry point (27 lines - references external files)
+├── styles/                       # CSS stylesheets
+│   └── main.css                  # All application styles (958 lines)
+├── js/                           # JavaScript modules
+│   ├── config.js                 # Configuration constants (62 lines)
+│   ├── utils.js                  # Utility functions (369 lines)
+│   ├── components.js             # React components (1259 lines)
+│   └── app.js                    # Main App component (349 lines)
 ├── cloudflare-worker/            # API proxy deployment (Story 1.0)
+│   ├── prompts.js                # System prompts configuration (2026-01-05)
 │   ├── worker.js                 # Cloudflare Worker code
 │   ├── wrangler.toml             # Worker configuration
 │   └── .dev.vars                 # Local environment variables (gitignored)
@@ -77,23 +85,50 @@ npx wrangler deploy
 
 ### File Organization (CRITICAL)
 
-**7-Section Internal Structure (MUST FOLLOW):**
+**Modular Structure (Refactored 2026-01-04):**
+
+The codebase was refactored from a single 3000+ line HTML file into a modular structure for better maintainability:
+
+**File Responsibilities:**
+- `index.html` - Entry point, loads CDN dependencies and external scripts
+- `styles/main.css` - All CSS styles (BEM-lite naming convention)
+- `js/config.js` - Configuration constants (API URLs, timeouts)
+- `js/utils.js` - Utility functions (API calls, error formatting, parsing)
+- `js/components.js` - All React components, hooks, and Context Provider
+- `js/app.js` - Main App component and ReactDOM render
+- `cloudflare-worker/prompts.js` - AI system prompts (CHAT_SYSTEM_PROMPT, IMPROVEMENT_SYSTEM_PROMPT)
+- `cloudflare-worker/worker.js` - Cloudflare Worker API proxy logic
+
+**Internal Structure Within `js/components.js` (MUST FOLLOW):**
 ```
-SECTION 1: CONSTANTS & CONFIGURATION
-SECTION 2: UTILITY FUNCTIONS
-SECTION 3: CUSTOM HOOKS
-SECTION 4: REACT COMPONENTS (Leaf → Composite → Layout)
-SECTION 5: CONTEXT PROVIDER
-SECTION 6: MAIN APP COMPONENT
-SECTION 7: RENDER
+1. CUSTOM HOOKS (useAppContext)
+2. ERROR BOUNDARY (ErrorBoundary class component)
+3. LEAF COMPONENTS (Tooltip, HighlightedText, Button, etc.)
+4. COMPOSITE COMPONENTS (ImprovedPromptWithBadges, MessageList, etc.)
+5. LAYOUT COMPONENTS (ChatInterface, FeedbackModal, ComparisonModal)
+6. CONTEXT PROVIDER (AppContext, AppProvider)
 ```
 
 **Component Definition Order (CRITICAL):**
 - Define LEAF components first (Button, Tooltip)
 - Then COMPOSITE components (MessageList, ChatInput)
 - Then LAYOUT components (ChatInterface, Modals)
-- Then APP component last
+- Then CONTEXT PROVIDER (AppProvider)
+- App component is in separate `app.js` file
 - Violation causes "ReferenceError: X is not defined"
+
+**Script Loading Order in HTML (REQUIRED):**
+```html
+<script type="text/babel" src="js/config.js"></script>     <!-- 1. Constants first -->
+<script type="text/babel" src="js/utils.js"></script>      <!-- 2. Utils use constants -->
+<script type="text/babel" src="js/components.js"></script> <!-- 3. Components use utils -->
+<script type="text/babel" src="js/app.js"></script>        <!-- 4. App uses everything -->
+```
+
+**HTTP Server Required:**
+- Browser CORS policy blocks loading external scripts from `file://` protocol
+- Must serve via HTTP: `python3 -m http.server 8001`
+- Access at: `http://localhost:8001/index.html`
 
 ### State Management Rules
 
@@ -184,6 +219,18 @@ ALLOWED_ORIGINS = "http://localhost:*,http://127.0.0.1:*"
 - `INVALID_API_KEY` - Service configuration error
 - `OPENAI_API_ERROR` - OpenAI returned error
 - `NETWORK_ERROR` - Connection failed
+
+**System Prompts Configuration (2026-01-05):**
+- **Location:** `cloudflare-worker/prompts.js`
+- **Pattern:** ES6 module with named exports
+- **Imports:** Worker imports using `import { CHAT_SYSTEM_PROMPT, IMPROVEMENT_SYSTEM_PROMPT } from './prompts.js'`
+- **Client Access:** Client code does NOT import prompts directly - all AI calls go through Worker proxy
+- **CRITICAL:** All AI system prompts MUST be defined in prompts.js, not inline in worker.js
+- **Deployment:** Wrangler automatically bundles prompts.js with worker.js (ES6 modules enabled via `wrangler.toml`)
+
+**Available Prompts:**
+- `CHAT_SYSTEM_PROMPT` - Product name generation with 4 packaging options
+- `IMPROVEMENT_SYSTEM_PROMPT` - R/T/E framework for prompt optimization
 
 ### Component Communication Patterns
 

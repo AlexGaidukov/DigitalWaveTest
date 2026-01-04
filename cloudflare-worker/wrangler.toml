@@ -3,5 +3,9 @@ main = "worker.js"
 compatibility_date = "2024-01-01"
 account_id = "331265379237f92f53d07710bb44f39b"
 
+# Enable ES6 modules support
+[build]
+upload.format = "modules"
+
 [vars]
 ALLOWED_ORIGINS = "*"

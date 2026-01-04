@@ -261,21 +261,34 @@ Client (GitHub Pages) → Cloudflare Worker → OpenAI API
 - Authentication: Bearer token in Authorization header
 - Response Format: JSON with `{ success, data, error }` structure
 
-**System Prompts (hardcoded in Worker):**
-```javascript
-const CHAT_SYSTEM_PROMPT = "You are a helpful assistant. Respond to user prompts naturally.";
+**System Prompts (as of 2026-01-05 refactoring):**
 
-const IMPROVEMENT_SYSTEM_PROMPT = `You are a prompt engineering expert. Analyze the user's original prompt and restructure it using the Rules/Task/Examples framework.
+System prompts are defined in `cloudflare-worker/prompts.js` as ES6 module exports:
 
-Rules: Constraints and guidelines the AI should follow
-Task: Clear, specific instruction of what to generate
-Examples: Sample outputs showing desired style
+**File: prompts.js**
+- `CHAT_SYSTEM_PROMPT`: Detailed product name generation prompt with 4 packaging options
+  - Migrated from `js/config.js` (was defined but unused)
+  - Contains comprehensive product descriptions for Option 1-4
+  - Used by `/api/chat` endpoint
+- `IMPROVEMENT_SYSTEM_PROMPT`: Complete R/T/E framework instructions for prompt optimization
+  - Migrated from inline definition in worker.js (~125 lines)
+  - Used by `/api/improve` endpoint
 
-Return JSON with:
-- improvedPrompt: restructured version
-- mapping: [{originalSentence, improvedSections: []}]
-- explanations: [{section, tooltip}]`;
-```
+**File: worker.js**
+- Imports prompts using ES6: `import { CHAT_SYSTEM_PROMPT, IMPROVEMENT_SYSTEM_PROMPT } from './prompts.js'`
+- Uses imported constants in callOpenAIAPI() function calls
+- No hardcoded prompts in worker logic
+
+**Rationale for refactoring:**
+- Original implementation had CHAT_SYSTEM_PROMPT defined in js/config.js but unused
+- Worker used simplified hardcoded prompt ("You are a helpful assistant") instead of detailed one
+- IMPROVEMENT_SYSTEM_PROMPT was 125+ lines inline in worker.js
+- Refactoring centralizes configuration, improves maintainability, enables version control
+
+**Deployment:**
+- Wrangler bundles prompts.js with worker.js automatically
+- ES6 modules enabled via `wrangler.toml`: `[build] upload.format = "modules"`
+- See `prompts-refactoring-2026-01-05.md` for complete refactoring documentation
 
 **Error Codes to Implement:**
 - `INVALID_ORIGIN` - Origin not in ALLOWED_ORIGINS

@@ -317,8 +317,9 @@ System analyzes user feedback and generates improved prompts using the Rules/Tas
 **FRs covered:** FR11-FR14, FR19-FR24 (9 FRs, 4 shared with Epic 2)
 
 **Implementation Notes:**
-- Uses OpenAI API with IMPROVEMENT_SYSTEM_PROMPT (hardcoded system prompt)
+- Uses OpenAI API with IMPROVEMENT_SYSTEM_PROMPT (externalized to prompts.js as of 2026-01-05)
 - Returns structured JSON: improvedPrompt, sentence mapping, explanations
+- **Note:** As of 2026-01-05, system prompts are defined in `cloudflare-worker/prompts.js` and imported by worker.js. See `prompts-refactoring-2026-01-05.md` for details
 - Parses original prompt into sentences (period-delimited)
 - Creates one-to-many mapping between original sentences and improved sections
 - Detects common prompt mistakes from feedback patterns
