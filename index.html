@@ -571,25 +571,53 @@
       border-top: 1px solid #e0e0e0;
     }
 
+    /* Story 5.1: Enhanced "Use This Prompt" Button Styling */
     .comparison-modal__use-button {
-      background-color: var(--color-primary);
-      color: #ffffff;
-      border: none;
-      padding: 12px 32px;
+      padding: 14px 32px;
       font-size: 1rem;
       font-weight: 600;
-      border-radius: var(--border-radius);
+      color: #fff;
+      background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.2s, transform 0.1s;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
     }
 
     .comparison-modal__use-button:hover {
-      background-color: #0052a3;
-      transform: translateY(-1px);
+      transform: scale(1.02);
+      background: linear-gradient(135deg, #357abd 0%, #2868a8 100%);
+      box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
     }
 
     .comparison-modal__use-button:active {
-      transform: translateY(0);
+      transform: scale(0.98);
+    }
+
+    .comparison-modal__use-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Story 5.1: Input Highlight Flash Animation */
+    .chat-interface__input-field--highlighted {
+      animation: inputHighlightFlash 600ms ease-out;
+    }
+
+    @keyframes inputHighlightFlash {
+      0% {
+        background-color: #fff;
+      }
+      20% {
+        background-color: #d4edda; /* Light green flash */
+        box-shadow: 0 0 12px rgba(40, 167, 69, 0.5);
+      }
+      100% {
+        background-color: #fff;
+        box-shadow: none;
+      }
     }
 
     /* Animations */
@@ -775,6 +803,215 @@
       outline: 2px solid #4a90e2;
       outline-offset: 2px;
       border-radius: 3px;
+    }
+
+    /* Story 5.3: Session Management - Reset Button and Modal Styles */
+    /* Chat Interface Header */
+    .chat-interface__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e5e7eb;
+      background-color: #f9fafb;
+    }
+
+    .chat-interface__title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #111827;
+      margin: 0;
+    }
+
+    /* Reset Button - Secondary Style */
+    .chat-interface__reset-button {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #6b7280;
+      background-color: transparent;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chat-interface__reset-button:hover {
+      color: #374151;
+      background-color: #f3f4f6;
+      border-color: #9ca3af;
+      transform: scale(1.02);
+    }
+
+    .chat-interface__reset-button:active {
+      transform: scale(0.98);
+    }
+
+    .chat-interface__reset-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .chat-interface__reset-button:focus {
+      outline: 2px solid #4a90e2;
+      outline-offset: 2px;
+    }
+
+    /* Reset Confirmation Modal */
+    .reset-modal__overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .reset-modal {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 450px;
+      width: 90%;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      animation: slideUp 0.2s ease-out;
+    }
+
+    .reset-modal__header {
+      margin-bottom: 1rem;
+    }
+
+    .reset-modal__title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #111827;
+      margin: 0;
+    }
+
+    .reset-modal__body {
+      margin-bottom: 1.5rem;
+    }
+
+    .reset-modal__message {
+      font-size: 1rem;
+      color: #6b7280;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .reset-modal__footer {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    .reset-modal__button {
+      padding: 0.625rem 1.25rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .reset-modal__button--cancel {
+      color: #374151;
+      background-color: #fff;
+      border: 1px solid #d1d5db;
+    }
+
+    .reset-modal__button--cancel:hover {
+      background-color: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    .reset-modal__button--confirm {
+      color: #fff;
+      background-color: #ef4444;
+      border: 1px solid #ef4444;
+    }
+
+    .reset-modal__button--confirm:hover {
+      background-color: #dc2626;
+      border-color: #dc2626;
+    }
+
+    .reset-modal__button:focus {
+      outline: 2px solid #4a90e2;
+      outline-offset: 2px;
+    }
+
+    /* Empty state message enhancement */
+    .message-list__empty-state {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      min-height: 300px;
+    }
+
+    .message-list__empty-text {
+      font-size: 1rem;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    /* Story 5.4: Error Message Container */
+    .error-message {
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .error-message__text {
+      margin: 0;
+      font-size: 0.875rem;
+      color: #991b1b;
+      line-height: 1.5;
+    }
+
+    /* Story 5.4: Retry Button */
+    .retry-button {
+      align-self: flex-start;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #fff;
+      background-color: #dc2626;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .retry-button:hover {
+      background-color: #b91c1c;
+      transform: scale(1.02);
+    }
+
+    .retry-button:active {
+      transform: scale(0.98);
+    }
+
+    .retry-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .retry-button:focus {
+      outline: 2px solid #dc2626;
+      outline-offset: 2px;
     }
   </style>
 </head>
@@ -997,23 +1234,99 @@ Return JSON with:
     };
 
     // Error formatting utility - maps technical errors to user-friendly messages
-    // Returns error object: { message, code }
+    // Returns error object: { message, code, details }
+    // Enhanced for Story 5.4: Comprehensive error handling
     function formatError(error) {
+      // Extract error code and message from various error types
+      let errorCode = 'UNKNOWN';
+      let errorMessage = 'Something went wrong. Please try again.';
+      let errorDetails = '';
+
+      if (error && typeof error === 'object') {
+        // Handle Error objects with code property
+        if (error.code) {
+          errorCode = error.code;
+          errorMessage = error.message || errorMessage;
+          errorDetails = error.details || '';
+        }
+        // Handle fetch Response errors
+        else if (error.status) {
+          errorCode = getStatusErrorCode(error.status);
+          errorMessage = getErrorMessageForStatus(error.status);
+          errorDetails = error.statusText || '';
+        }
+        // Handle standard Error objects
+        else if (error.message) {
+          // Check for TypeError from fetch (likely CORS or worker unavailable)
+          if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+            errorCode = 'WORKER_UNAVAILABLE';
+            errorMessage = 'Service temporarily unavailable. Please try again.';
+          }
+          // Parse error message for known patterns
+          else if (error.message.includes('timeout') || error.message.includes('Timeout')) {
+            errorCode = 'API_TIMEOUT';
+            errorMessage = 'The request took too long. Please try again.';
+          } else if (error.message.includes('network') || error.message.includes('Network')) {
+            errorCode = 'NETWORK_ERROR';
+            errorMessage = 'Connection issue. Please check your internet and try again.';
+          } else if (error.message.includes('rate limit') || error.message.includes('429')) {
+            errorCode = 'RATE_LIMIT_EXCEEDED';
+            errorMessage = 'We\'re experiencing high demand. Please wait a moment and try again.';
+          }
+          errorDetails = error.message;
+        }
+      } else if (typeof error === 'string') {
+        // Handle string errors (legacy, shouldn't happen)
+        errorMessage = error;
+        errorDetails = error;
+      }
+
+      // Error code to message mapping
       const errorMessages = {
         'API_TIMEOUT': 'The request took too long. Please try again.',
         'RATE_LIMIT_EXCEEDED': 'We\'re experiencing high demand. Please wait a moment and try again.',
-        'INVALID_API_KEY': 'Service configuration error. Please contact support.',
+        'AUTHENTICATION_FAILED': 'Service configuration error. Please contact support.',
         'NETWORK_ERROR': 'Connection issue. Please check your internet and try again.',
+        'WORKER_UNAVAILABLE': 'Service temporarily unavailable. Please try again.',
         'INVALID_RESPONSE': 'The AI returned an invalid response. Please try again.',
         'MISSING_FIELDS': 'Required information is missing. Please check your input and try again.',
         'UNKNOWN': 'Something went wrong. Please try again.'
       };
 
-      const code = error.code || 'UNKNOWN';
+      // Get user-friendly message for error code
+      const userMessage = errorMessages[errorCode] || errorMessages.UNKNOWN;
+
       return {
-        message: errorMessages[code] || errorMessages.UNKNOWN,
-        code: code
+        code: errorCode,
+        message: userMessage,
+        details: errorDetails
       };
+    }
+
+    // Helper: Map HTTP status to error code
+    function getStatusErrorCode(status) {
+      const statusMap = {
+        401: 'AUTHENTICATION_FAILED',
+        429: 'RATE_LIMIT_EXCEEDED',
+        500: 'WORKER_UNAVAILABLE',
+        502: 'WORKER_UNAVAILABLE',
+        503: 'WORKER_UNAVAILABLE',
+        504: 'API_TIMEOUT'
+      };
+      return statusMap[status] || 'UNKNOWN';
+    }
+
+    // Helper: Get message for HTTP status
+    function getErrorMessageForStatus(status) {
+      const messages = {
+        401: 'Service configuration error. Please contact support.',
+        429: 'We\'re experiencing high demand. Please wait a moment and try again.',
+        500: 'Service temporarily unavailable. Please try again.',
+        502: 'Service temporarily unavailable. Please try again.',
+        503: 'Service temporarily unavailable. Please try again.',
+        504: 'The request took too long. Please try again.'
+      };
+      return messages[status] || 'Something went wrong. Please try again.';
     }
 
     // Chat API integration - calls Cloudflare Worker proxy
@@ -1748,8 +2061,10 @@ Return JSON with:
       if (messages.length === 0) {
         return (
           <div className="chat-interface__message-list">
-            <div className="chat-interface__empty-state">
-              No messages yet. Start by entering a prompt.
+            <div className="message-list__empty-state">
+              <p className="message-list__empty-text" role="status">
+                No messages yet. Start by entering a prompt.
+              </p>
             </div>
           </div>
         );
@@ -1776,65 +2091,106 @@ Return JSON with:
       );
     };
 
+    // RetryButton - Leaf component for error display with retry functionality
+    // Story 5.4: Retry mechanism for failed API calls
+    // Props: onRetry (function), error (object with { message, code }), isRetrying (boolean)
+    const RetryButton = ({ onRetry, error, isRetrying }) => {
+      // Don't render if no error
+      if (!error) return null;
+
+      // Check if error is retryable
+      const retryableErrorCodes = ['API_TIMEOUT', 'NETWORK_ERROR', 'RATE_LIMIT_EXCEEDED'];
+      const isRetryable = retryableErrorCodes.includes(error.code);
+
+      const handleRetry = () => {
+        if (onRetry && typeof onRetry === 'function' && !isRetrying) {
+          onRetry();
+        }
+      };
+
+      return (
+        React.createElement('div', { className: 'error-message', role: 'alert', 'aria-live': 'polite' },
+          React.createElement('p', { className: 'error-message__text' }, error.message),
+          isRetryable && React.createElement('button', {
+            className: 'retry-button',
+            onClick: handleRetry,
+            disabled: isRetrying,
+            type: 'button'
+          }, isRetrying ? 'Retrying...' : 'Try Again')
+        )
+      );
+    };
+
     // ChatInput - Input field with send button
     // AC #4: ChatInput component with onSubmit and isLoading props
     // Story 2.4: Added optional disable during improvement generation
-    const ChatInput = ({ onSubmit, isLoading = false }) => {
+    // Story 5.4: Added error, onRetry, and isRetrying props for error display with retry
+    const ChatInput = React.forwardRef(({ onSubmit, isLoading = false, value, onChange, isHighlighted = false, error, onRetry, isRetrying }, ref) => {
       const { validationError, setValidationError, isGeneratingImprovement } = useAppContext();
-      const [inputValue, setInputValue] = React.useState('');
       const inputRef = React.useRef(null);
+
+      // Story 5.1: Expose focus method via useImperativeHandle
+      React.useImperativeHandle(ref, () => ({
+        focus: () => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+            // Move cursor to end of text
+            inputRef.current.setSelectionRange(value.length, value.length);
+          }
+        }
+      }), [value]);
 
       // Optimize handleChange with useCallback to prevent unnecessary re-renders
       const handleChange = React.useCallback((e) => {
-        setInputValue(e.target.value);
+        onChange(e.target.value);
         // Clear validation error when user starts typing
         if (validationError && e.target.value.trim()) {
           setValidationError(null);
         }
-      }, [validationError, setValidationError]);
+      }, [validationError, setValidationError, onChange]);
 
       // Optimize handleSubmit with useCallback
       const handleSubmit = React.useCallback((e) => {
         e.preventDefault();
 
         // Validation: Empty input
-        if (!inputValue.trim()) {
+        if (!value.trim()) {
           setValidationError({ message: 'Please enter a prompt', code: 'EMPTY_INPUT' });
           inputRef.current?.focus();
           return;
         }
 
         // Validation: Maximum length
-        if (inputValue.length > MAX_PROMPT_LENGTH) {
+        if (value.length > MAX_PROMPT_LENGTH) {
           setValidationError({ message: 'Prompt is too long. Maximum 2000 characters.', code: 'MAX_LENGTH_EXCEEDED' });
           return;
         }
 
-        const userPrompt = inputValue.trim();
-        setInputValue(''); // Clear input (FR6)
+        const userPrompt = value.trim();
 
-        // Call parent's onSubmit handler with the prompt
+        // Call parent's onSubmit handler with the prompt (parent will clear value)
         onSubmit(userPrompt);
-      }, [inputValue, setValidationError, onSubmit]);
+      }, [value, setValidationError, onSubmit]);
 
       // Story 2.4: Disable input during chat loading OR improvement generation
       const isDisabled = isLoading || isGeneratingImprovement;
 
       return (
         <>
+          {error && <RetryButton error={error} onRetry={onRetry} isRetrying={isRetrying} />}
           <form className="chat-interface__input-form" onSubmit={handleSubmit}>
             <input
               ref={inputRef}
-              className="chat-interface__input-field"
+              className={`chat-interface__input-field${isHighlighted ? ' chat-interface__input-field--highlighted' : ''}`}
               type="text"
-              value={inputValue}
+              value={value}
               onChange={handleChange}
               placeholder={isGeneratingImprovement ? "Please wait while we generate your improvement..." : "Enter your prompt..."}
               disabled={isDisabled}
             />
             <Button
               onClick={handleSubmit}
-              disabled={isDisabled || !inputValue.trim()}
+              disabled={isDisabled || !value.trim()}
             >
               {isLoading ? 'Sending...' : 'Send'}
             </Button>
@@ -1842,7 +2198,127 @@ Return JSON with:
           {validationError && <ValidationError error={validationError} />}
         </>
       );
-    };
+    });
+
+    // ResetConfirmationModal - Layout component (Story 5.3)
+    // Optional modal for confirming destructive reset action
+    // Props: isOpen (boolean), onConfirm (callback), onCancel (callback)
+    // Accessibility: Focus trap, ESC key, keyboard navigation, screen reader support
+    const ResetConfirmationModal = React.memo(({ isOpen, onConfirm, onCancel }) => {
+      const modalRef = React.useRef(null);
+
+      // ESC key handler and keyboard focus trap
+      React.useEffect(() => {
+        const handleEscape = (e) => {
+          if (e.key === 'Escape') {
+            onCancel();
+          }
+        };
+
+        // Focus trap: Tab key cycles within modal only
+        const handleTab = (e) => {
+          if (e.key === 'Tab') {
+            if (!modalRef.current) return;
+
+            const focusableElements = modalRef.current.querySelectorAll(
+              'button, [tabindex]:not([tabindex="-1"])'
+            );
+
+            if (focusableElements.length === 0) return;
+
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            if (e.shiftKey) {
+              // Shift+Tab: Focus moving backwards
+              if (document.activeElement === firstElement) {
+                e.preventDefault();
+                lastElement.focus();
+              }
+            } else {
+              // Tab: Focus moving forwards
+              if (document.activeElement === lastElement) {
+                e.preventDefault();
+                firstElement.focus();
+              }
+            }
+          }
+        };
+
+        if (isOpen) {
+          // Add event listeners
+          document.addEventListener('keydown', handleEscape);
+          document.addEventListener('keydown', handleTab);
+
+          // Set initial focus to first focusable element
+          if (modalRef.current) {
+            const firstFocusable = modalRef.current.querySelector(
+              'button, [tabindex]:not([tabindex="-1"])'
+            );
+            firstFocusable?.focus();
+          }
+        }
+
+        return () => {
+          // Cleanup: remove event listeners
+          document.removeEventListener('keydown', handleEscape);
+          document.removeEventListener('keydown', handleTab);
+        };
+      }, [isOpen, onCancel]);
+
+      // Guard clause - don't render if closed
+      if (!isOpen) return null;
+
+      const handleOverlayClick = (e) => {
+        // Close only if overlay is clicked, not modal container
+        if (e.target.classList.contains('reset-modal__overlay')) {
+          onCancel();
+        }
+      };
+
+      return (
+        <div className="reset-modal__overlay" onClick={handleOverlayClick}>
+          <div
+            ref={modalRef}
+            className="reset-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-modal-title"
+            aria-describedby="reset-modal-description"
+          >
+            {/* Modal Header */}
+            <div className="reset-modal__header">
+              <h2 id="reset-modal-title" className="reset-modal__title">
+                Clear Chat History?
+              </h2>
+            </div>
+
+            {/* Modal Body */}
+            <div className="reset-modal__body">
+              <p id="reset-modal-description" className="reset-modal__message">
+                This will clear all chat history and you'll start fresh. This action cannot be undone.
+              </p>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="reset-modal__footer">
+              <button
+                className="reset-modal__button reset-modal__button--cancel"
+                onClick={onCancel}
+              >
+                Cancel
+              </button>
+              <button
+                className="reset-modal__button reset-modal__button--confirm"
+                onClick={onConfirm}
+              >
+                Clear History
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    });
 
     // LAYOUT COMPONENT (defined last)
 
@@ -1850,9 +2326,16 @@ Return JSON with:
     // AC #5: ChatInterface component using useAppContext
     // Story 2.1: Added logic to find most recent AI message and handle "Not Satisfied" button
     // Story 2.4: Added LoadingIndicator for feedback processing state
-    const ChatInterface = () => {
+    // Story 5.1: Accept controlled input props from App
+    // Story 5.3: Add header with reset button and confirmation modal
+    // Story 5.4: Added isRetrying state for retry debouncing
+    const ChatInterface = ({ chatInputValue, setChatInputValue, chatInputRef, isInputHighlighted, onReset }) => {
       const { chatHistory, isChatLoading, chatError, addMessage, setChatError, setIsChatLoading, setValidationError, isFeedbackModalOpen, setIsFeedbackModalOpen, setRecentFeedback, isGeneratingImprovement } = useAppContext();
       const [pendingPrompt, setPendingPrompt] = React.useState(null);
+      const [isRetrying, setIsRetrying] = React.useState(false);
+
+      // Story 5.3: Local state for reset confirmation modal
+      const [showResetConfirm, setShowResetConfirm] = React.useState(false);
 
       // Story 2.1: Find most recent AI response for "Not Satisfied" button
       const getMostRecentAIMessage = React.useCallback(() => {
@@ -1868,7 +2351,30 @@ Return JSON with:
         setIsFeedbackModalOpen(true);
       }, [setIsFeedbackModalOpen]);
 
+      // Story 5.3: Handle reset button click
+      // Show confirmation if there are messages, otherwise reset immediately
+      const handleResetClick = React.useCallback(() => {
+        if (chatHistory && chatHistory.length > 0) {
+          setShowResetConfirm(true);
+        } else {
+          // No messages, reset immediately
+          onReset();
+        }
+      }, [chatHistory, onReset]);
+
+      // Story 5.3: Confirm reset action
+      const handleConfirmReset = React.useCallback(() => {
+        setShowResetConfirm(false);
+        onReset();
+      }, [onReset]);
+
+      // Story 5.3: Cancel reset action
+      const handleCancelReset = React.useCallback(() => {
+        setShowResetConfirm(false);
+      }, []);
+
       // API integration submit handler - Story 1.4 implementation with retry support
+      // Story 5.4: Enhanced with formatError for comprehensive error handling
       // Optimized with useCallback to prevent unnecessary re-renders
       const handleSubmit = React.useCallback(async (userPrompt) => {
         try {
@@ -1877,6 +2383,9 @@ Return JSON with:
 
           // Add user message to chat history
           addMessage({ role: 'user', content: userPrompt });
+
+          // Story 5.1: Clear input after submission
+          setChatInputValue('');
 
           // Clear validation and error on new submission
           setValidationError(null);
@@ -1895,25 +2404,43 @@ Return JSON with:
           setChatError(null);
           setPendingPrompt(null);
         } catch (error) {
-          // Set error object for display
-          setChatError(error);
-          console.error('API call failed:', error.message);
+          // Story 5.4: Format error for user-friendly display
+          const formattedError = formatError(error);
+          setChatError(formattedError);
+          console.error('Chat API error:', formattedError);
         } finally {
           // Always clear loading state
           setIsChatLoading(false);
         }
-      }, [addMessage, setChatError, setIsChatLoading, setValidationError]);
+      }, [addMessage, setChatError, setIsChatLoading, setValidationError, setChatInputValue]);
 
-      // Optimize handleRetry with useCallback
+      // Story 5.4: Retry handler with debouncing to prevent race conditions
       const handleRetry = React.useCallback(async () => {
-        if (pendingPrompt) {
+        if (pendingPrompt && !isRetrying && !isChatLoading) {
+          setIsRetrying(true);
           setChatError(null); // Clear error before retry
-          await handleSubmit(pendingPrompt);
+          try {
+            await handleSubmit(pendingPrompt);
+          } finally {
+            setIsRetrying(false);
+          }
         }
-      }, [pendingPrompt, setChatError, handleSubmit]);
+      }, [pendingPrompt, isRetrying, isChatLoading, setChatError, handleSubmit]);
 
       return (
         <div className="chat-interface">
+          {/* Story 5.3: Header with title and reset button */}
+          <div className="chat-interface__header">
+            <h1 className="chat-interface__title">DigitalWave Test</h1>
+            <button
+              className="chat-interface__reset-button"
+              onClick={handleResetClick}
+              aria-label="Clear chat history and start fresh"
+            >
+              Start Fresh
+            </button>
+          </div>
+
           <MessageList
             messages={chatHistory}
             mostRecentAIMessage={mostRecentAIMessage}
@@ -1927,10 +2454,26 @@ Return JSON with:
             <LoadingIndicator message="Generating improvement..." />
           )}
 
-          {chatError && <ErrorDisplay error={chatError} onRetry={handleRetry} />}
           <div className="chat-interface__input-container">
-            <ChatInput onSubmit={handleSubmit} isLoading={isChatLoading} />
+            <ChatInput
+              ref={chatInputRef}
+              onSubmit={handleSubmit}
+              isLoading={isChatLoading}
+              value={chatInputValue}
+              onChange={setChatInputValue}
+              isHighlighted={isInputHighlighted}
+              error={chatError}
+              onRetry={handleRetry}
+              isRetrying={isRetrying}
+            />
           </div>
+
+          {/* Story 5.3: Reset Confirmation Modal */}
+          <ResetConfirmationModal
+            isOpen={showResetConfirm}
+            onConfirm={handleConfirmReset}
+            onCancel={handleCancelReset}
+          />
         </div>
       );
     };
@@ -1938,10 +2481,11 @@ Return JSON with:
     // FeedbackModal - Layout component (Story 2.2)
     // Modal dialog for collecting user feedback about AI responses
     // Props: isOpen (boolean), onClose (callback), onSubmit (callback with feedbackText)
+    // Story 5.4: Added error and onRetry props for error display with retry
     // Architecture: feedbackText stored in LOCAL state (not context) - form data should be
     // ephemeral and component-scoped, not polluting global state
     // Memoized to prevent unnecessary re-renders when parent App re-renders
-    const FeedbackModal = React.memo(({ isOpen, onClose, onSubmit }) => {
+    const FeedbackModal = React.memo(({ isOpen, onClose, onSubmit, error, onRetry }) => {
       const [feedbackText, setFeedbackText] = React.useState('');
       const [isSubmitting, setIsSubmitting] = React.useState(false);
       const textareaRef = React.useRef(null);
@@ -2028,6 +2572,7 @@ Return JSON with:
                 aria-label="Feedback input"
                 disabled={isSubmitting}
               />
+              {error && <RetryButton error={error} onRetry={onRetry} />}
               <p
                 className={`feedback-modal__char-counter ${
                   feedbackText.length > 450 ? 'feedback-modal__char-counter--danger' :
@@ -2065,7 +2610,7 @@ Return JSON with:
     // Props: isOpen (boolean), comparisonData (object with originalPrompt, improvedPrompt), onClose (callback)
     // Story 4.2: Enhanced with HighlightedText component for improved prompt highlighting
     // Story 4.3: Enhanced with mapping badges and HighlightedSentences component
-    const ComparisonModal = ({ isOpen, comparisonData, onClose }) => {
+    const ComparisonModal = ({ isOpen, comparisonData, onClose, onUsePrompt }) => {
       const modalRef = React.useRef(null);
       const triggerElementRef = React.useRef(null);
 
@@ -2080,9 +2625,38 @@ Return JSON with:
       // Story 4.3: State for interactive hover (optional)
       const [activeBadgeNumber, setActiveBadgeNumber] = React.useState(null);
 
+      // Story 5.1: State for button loading
+      const [isInserting, setIsInserting] = React.useState(false);
+
       const handleBadgeHover = React.useCallback((badgeNumber) => {
         setActiveBadgeNumber(prevBadge => prevBadge === badgeNumber ? null : badgeNumber);
       }, []);
+
+      // Story 5.1: Handle "Use This Prompt" button click
+      // Code Review Fix: Added null check and increased timeout to match modal animation
+      const handleUsePrompt = React.useCallback(() => {
+        // Code Review Fix: Null check for comparisonData
+        if (!comparisonData || !comparisonData.improvedPrompt) {
+          console.error('No improved prompt available');
+          return;
+        }
+
+        setIsInserting(true);
+
+        // Extract improved prompt from comparison data
+        const { improvedPrompt } = comparisonData;
+
+        // Call parent callback to insert prompt into chat input
+        if (onUsePrompt) {
+          onUsePrompt(improvedPrompt);
+        }
+
+        // Close modal
+        onClose();
+
+        // Code Review Fix: Increased timeout to 300ms to match modal close animation duration
+        setTimeout(() => setIsInserting(false), 300);
+      }, [comparisonData, onUsePrompt, onClose]);
 
       // ESC key handler and keyboard focus trap
       React.useEffect(() => {
@@ -2226,13 +2800,11 @@ Return JSON with:
             <div className="comparison-modal__footer">
               <button
                 className="comparison-modal__use-button"
-                onClick={() => {
-                  // Story 5.1 will implement "Use This Prompt" functionality
-                  // For now, just close modal
-                  onClose();
-                }}
+                onClick={handleUsePrompt}
+                disabled={isInserting}
+                aria-label="Use this improved prompt"
               >
-                Use This Prompt
+                {isInserting ? 'Inserting...' : 'Use This Prompt'}
               </button>
             </div>
           </div>
@@ -2352,12 +2924,115 @@ Return JSON with:
         chatHistory,
         setRecentFeedback,
         setIsGeneratingImprovement,
-        setImprovementError
+        improvementError,
+        setImprovementError,
+        setChatHistory,
+        setChatError,
+        setIsChatLoading
       } = useAppContext();
+
+      // Story 5.1: State for controlled chat input value
+      const [chatInputValue, setChatInputValue] = React.useState('');
+
+      // Story 5.1: Ref for ChatInput component (to call focus method)
+      const chatInputRef = React.useRef(null);
+
+      // Story 5.1: State for visual highlight animation
+      const [isInputHighlighted, setIsInputHighlighted] = React.useState(false);
+
+      // Code Review Fix: Refs for timeout cleanup
+      const highlightTimeoutRef = React.useRef(null);
+      const focusTimeoutRef = React.useRef(null);
+      const announcementTimeoutRef = React.useRef(null);
+      const resetAnnouncementTimeoutRef = React.useRef(null);
+
+      // Code Review Fix: Named constants for magic numbers
+      const FOCUS_DELAY_MS = 100;
+      const ANNOUNCEMENT_DURATION_MS = 1000;
 
       const handleFeedbackClose = () => {
         setIsFeedbackModalOpen(false);
       };
+
+      // Story 5.3: Handle session reset
+      // Clears all application state to initial values
+      const handleSessionReset = React.useCallback(() => {
+        const resetStartTime = performance.now();
+
+        // Clear chat history
+        setChatHistory([]);
+
+        // Clear input field
+        setChatInputValue('');
+
+        // Clear all modal states
+        setIsFeedbackModalOpen(false);
+        setIsComparisonModalOpen(false);
+        setComparisonData(null);
+
+        // Clear error states
+        setChatError(null);
+        setImprovementError(null);
+
+        // Clear loading states (should already be false, but ensure)
+        setIsChatLoading(false);
+
+        // Clear feedback context
+        setRecentFeedback(null);
+
+        // Focus input field after reset
+        if (focusTimeoutRef.current) {
+          clearTimeout(focusTimeoutRef.current);
+        }
+        focusTimeoutRef.current = setTimeout(() => {
+          try {
+            if (chatInputRef.current && chatInputRef.current.focus) {
+              chatInputRef.current.focus();
+            }
+          } catch (error) {
+            console.warn('Failed to focus input after reset:', error);
+          }
+          focusTimeoutRef.current = null;
+        }, FOCUS_DELAY_MS);
+
+        // Screen reader announcement
+        if (resetAnnouncementTimeoutRef.current) {
+          clearTimeout(resetAnnouncementTimeoutRef.current);
+        }
+        const announcement = document.createElement('div');
+        announcement.setAttribute('role', 'status');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.textContent = 'Chat history cleared';
+        document.body.appendChild(announcement);
+
+        resetAnnouncementTimeoutRef.current = setTimeout(() => {
+          if (document.body.contains(announcement)) {
+            document.body.removeChild(announcement);
+          }
+          resetAnnouncementTimeoutRef.current = null;
+        }, ANNOUNCEMENT_DURATION_MS);
+
+        // Performance logging (verify <100ms per NFR-P1)
+        const resetEndTime = performance.now();
+        const resetTime = resetEndTime - resetStartTime;
+        if (resetTime > 100) {
+          console.warn(`Session reset took ${resetTime.toFixed(2)}ms (target: <100ms per NFR-P1)`);
+        }
+      }, [
+        setChatHistory,
+        setChatInputValue,
+        setIsFeedbackModalOpen,
+        setIsComparisonModalOpen,
+        setComparisonData,
+        setChatError,
+        setImprovementError,
+        setIsChatLoading,
+        setRecentFeedback,
+        chatInputRef
+      ]);
+
+      // Story 5.4: State for storing last improvement parameters for retry
+      const [lastImprovementParams, setLastImprovementParams] = React.useState(null);
 
       const handleFeedbackSubmit = async (feedbackText) => {
         // Extract most recent messages from chat history
@@ -2385,6 +3060,12 @@ Return JSON with:
 
         // Store feedback in context
         setRecentFeedback(feedback);
+
+        // Story 5.4: Store parameters for retry
+        setLastImprovementParams({
+          originalPrompt: feedback.userPrompt,
+          userFeedback: feedback.feedbackText
+        });
 
         // Clear any previous improvement errors
         setImprovementError(null);
@@ -2417,23 +3098,126 @@ Return JSON with:
           setIsComparisonModalOpen(true);
 
         } catch (error) {
-          console.error('Improvement generation failed:', error);
+          // Story 5.4: Format error for user-friendly display
+          const formattedError = formatError(error);
+          console.error('Improvement generation failed:', formattedError);
+
+          // Clear loading state
           setIsGeneratingImprovement(false);
 
-          // Show error in UI
-          setImprovementError(error);
+          // Show error in UI (reopen modal for retry)
+          setImprovementError(formattedError);
+          setIsFeedbackModalOpen(true); // Reopen modal to show error
         }
       };
 
+      // Story 5.4: Handle improvement generation retry
+      const handleRetryImprovement = React.useCallback(async () => {
+        if (lastImprovementParams) {
+          setImprovementError(null); // Clear error before retry
+          setIsGeneratingImprovement(true);
+
+          try {
+            const { improvedPrompt, mapping, explanations } = await generateImprovement(
+              lastImprovementParams.originalPrompt,
+              lastImprovementParams.userFeedback
+            );
+
+            setComparisonData({
+              originalPrompt: lastImprovementParams.originalPrompt,
+              improvedPrompt: improvedPrompt,
+              mapping: mapping,
+              explanations: explanations
+            });
+
+            setIsGeneratingImprovement(false);
+            setIsFeedbackModalOpen(false); // Close modal on success
+            setIsComparisonModalOpen(true);
+          } catch (error) {
+            const formattedError = formatError(error);
+            console.error('Improvement retry failed:', formattedError);
+            setIsGeneratingImprovement(false);
+            setImprovementError(formattedError);
+            // Modal stays open for another retry
+          }
+        }
+      }, [lastImprovementParams, setImprovementError, setIsGeneratingImprovement, setIsFeedbackModalOpen, setIsComparisonModalOpen, setComparisonData]);
+
+      // Story 5.1: Handle "Use This Prompt" button click
+      // Code Review Fix: Added all dependencies, timeout cleanup, error handling
+      const handleUseImprovedPrompt = React.useCallback((improvedPrompt) => {
+        // Insert improved prompt into chat input field
+        setChatInputValue(improvedPrompt);
+
+        // Close comparison modal
+        setIsComparisonModalOpen(false);
+
+        // Code Review Fix: Clear existing highlight timeout before setting new one
+        if (highlightTimeoutRef.current) {
+          clearTimeout(highlightTimeoutRef.current);
+        }
+
+        // Add visual highlight flash to input field
+        setIsInputHighlighted(true);
+        highlightTimeoutRef.current = setTimeout(() => {
+          setIsInputHighlighted(false);
+          highlightTimeoutRef.current = null;
+        }, 600); // Remove after animation
+
+        // Code Review Fix: Clear existing focus timeout before setting new one
+        if (focusTimeoutRef.current) {
+          clearTimeout(focusTimeoutRef.current);
+        }
+
+        // Focus input field after modal closes
+        focusTimeoutRef.current = setTimeout(() => {
+          try {
+            if (chatInputRef.current && chatInputRef.current.focus) {
+              chatInputRef.current.focus();
+            }
+          } catch (error) {
+            console.warn('Failed to focus input:', error);
+          }
+          focusTimeoutRef.current = null;
+        }, 150); // Small delay to allow modal close animation
+
+        // Code Review Fix: Clear existing announcement timeout before creating new one
+        if (announcementTimeoutRef.current) {
+          clearTimeout(announcementTimeoutRef.current);
+        }
+
+        // Announce to screen readers
+        const announcement = document.createElement('div');
+        announcement.setAttribute('role', 'status');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.textContent = 'Improved prompt inserted into input field';
+        document.body.appendChild(announcement);
+
+        announcementTimeoutRef.current = setTimeout(() => {
+          if (document.body.contains(announcement)) {
+            document.body.removeChild(announcement);
+          }
+          announcementTimeoutRef.current = null;
+        }, 1000);
+      }, [setIsComparisonModalOpen, setChatInputValue, setIsInputHighlighted, chatInputRef]);
+
       return (
         <div className="app-container">
-          <ChatInterface />
+          <ChatInterface
+            chatInputValue={chatInputValue}
+            setChatInputValue={setChatInputValue}
+            chatInputRef={chatInputRef}
+            isInputHighlighted={isInputHighlighted}
+            onReset={handleSessionReset}
+          />
 
-          {/* Feedback Modal */}
+          {/* Feedback Modal - Story 5.4: Added error and retry handling */}
           <FeedbackModal
             isOpen={isFeedbackModalOpen}
             onClose={handleFeedbackClose}
             onSubmit={handleFeedbackSubmit}
+            error={improvementError}
+            onRetry={handleRetryImprovement}
           />
 
           {/* Story 4.1: Comparison Modal */}
@@ -2441,6 +3225,7 @@ Return JSON with:
             isOpen={isComparisonModalOpen}
             comparisonData={comparisonData}
             onClose={handleCloseComparisonModal}
+            onUsePrompt={handleUseImprovedPrompt}
           />
         </div>
       );

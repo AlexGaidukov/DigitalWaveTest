@@ -11,7 +11,7 @@ lastStep: 4
 project_name: 'DigitalWaveTest'
 user_name: 'Alexgaidukov'
 date: '2026-01-04'
-totalStories: 21
+totalStories: 20
 totalEpics: 5
 validationStatus: 'COMPLETE'
 allFRsCovered: true
@@ -251,7 +251,7 @@ This document provides the complete epic and story breakdown for DigitalWaveTest
 - FR37: Close side-by-side comparison modal via close button or ESC key
 - FR38: View framework education tooltips explaining Rules/Task/Examples definitions
 
-**Epic 5: Prompt Application & Skill Transfer (15 FRs)**
+**Epic 5: Prompt Application & Skill Transfer (13 FRs)**
 - FR25: Apply improved prompts by clicking "Use This Prompt" button (inserts into chat input, does not auto-submit)
 - FR26: Insert improved prompt text into main chat input field without automatic submission
 - FR27: Manually submit the improved prompt after it's inserted into chat input
@@ -260,8 +260,6 @@ This document provides the complete epic and story breakdown for DigitalWaveTest
 - FR41: Create memorable "aha moments" through failure-then-transformation experience
 - FR42: Enable skill transfer by teaching repeatable methodology applicable beyond the tool
 - FR45: Clear chat history and start fresh session via reset button
-- FR46: Copy AI responses to clipboard via copy button
-- FR47: Copy improved prompts to clipboard via copy button
 - FR48: Preserve chat history context after user applies improved prompt
 - FR52: Provide visual feedback for all asynchronous operations
 - FR53: Handle API errors gracefully with user-friendly error messages
@@ -356,12 +354,11 @@ Users can apply improved prompts with one-click action, test them immediately to
 
 **User Outcome:** Users complete the learning loop by applying improved prompts, experiencing validation through better results, and building independent prompt engineering skills.
 
-**FRs covered:** FR25-FR27, FR39-FR42, FR45-FR48, FR52-FR58 (15 FRs)
+**FRs covered:** FR25-FR27, FR39-FR42, FR45, FR48, FR52-FR58 (13 FRs)
 
 **Implementation Notes:**
 - "Use This Prompt" button: one-click insertion into chat input (no auto-submit)
 - User manually submits to see better results (proof moment)
-- Copy to clipboard functionality for portability to other AI tools
 - Reset/clear session button for fresh start
 - Comprehensive error handling: user-friendly messages, retry buttons
 - Framework education and skill transfer reinforcement
@@ -1777,84 +1774,7 @@ So that I experience the validation moment that proves the framework works.
 
 ---
 
-### Story 5.3: Copy to Clipboard
-
-As a user,
-I want to copy AI responses and improved prompts to my clipboard,
-So that I can use them in other AI tools or save them for future reference.
-
-**Acceptance Criteria:**
-
-**Given** the chat interface or comparison modal is displaying content,
-**When** I click copy buttons,
-**Then** the following functionality should work (FR46, FR47):
-
-**Copy buttons for AI responses (FR46):**
-- **Given** MessageBubble displays an AI response
-- **When** rendering the message
-- **Then** include a "Copy" button
-- **And** position button: Top-right corner of message bubble
-- **And** BEM-lite class: `.message-bubble__copy-button`
-- **And** button icon: "Copy" text or clipboard icon
-- **And** button styling: Subtle, not distracting
-
-**Copy button for improved prompt (FR47):**
-- **Given** comparison modal displays improved prompt
-- **When** rendering the modal
-- **Then** include "Copy" button for improved prompt
-- **And** position button: In improved prompt column header
-- **Or** position button: Below improved prompt text
-- **And** BEM-lite class: `.comparison-modal__copy-button`
-
-**Copy behavior:**
-- **Given** copy button is clicked
-- **When** onClick executes
-- **Then** use Clipboard API: `navigator.clipboard.writeText()`
-- **And** copy the text content:
-  - For AI response: Copy the full response text
-  - For improved prompt: Copy the `improvedPrompt` from comparisonData
-- **And** handle errors gracefully if clipboard access fails
-
-**Visual feedback:**
-- **Given** copy button is clicked
-- **When** text is copied
-- **Then** show confirmation feedback:
-  - Change button text to "Copied!"
-  - Or show tooltip: "Copied to clipboard"
-  - Or flash success color
-- **And** revert button to original state after 2 seconds
-
-**Error handling:**
-- **Given** clipboard API is unavailable
-- **When** copy fails
-- **Then** display error message:
-  - "Unable to copy. Please select and copy manually."
-  - Or fallback to text selection method
-- **And** don't break the UI
-
-**Accessibility:**
-- Copy buttons are keyboard accessible
-- Screen reader announces: "Copied to clipboard"
-- Focus remains on button after copy
-
-**Button states:**
-- Default: "Copy" text/icon
-- Loading: (if needed, instant operation)
-- Success: "Copied!" (briefly, then revert)
-- Error: Error icon or message
-
-**Given** I click a copy button,
-**When** the text is copied,
-**Then** I should:
-- See confirmation that it worked
-- Be able to paste in other applications
-- Use the content in ChatGPT, Claude, etc.
-
-**Requirements fulfilled:** FR46, FR47, NFR-P1
-
----
-
-### Story 5.4: Session Management
+### Story 5.3: Session Management
 
 As a user,
 I want to clear my chat history and start fresh,
@@ -1939,7 +1859,7 @@ So that I can begin a new session without refreshing the page.
 
 ---
 
-### Story 5.5: Comprehensive Error Handling
+### Story 5.4: Comprehensive Error Handling
 
 As a system,
 I want to handle all API errors gracefully with user-friendly messages and retry mechanisms,

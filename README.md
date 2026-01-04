@@ -281,6 +281,166 @@ The `index.html` file follows a strict 7-section structure:
 - Check OpenAI API status: https://status.openai.com
 - Review Worker logs: `npx wrangler tail`
 
+## Testing the Learning Journey (Story 5.2)
+
+This section demonstrates the complete user flow from vague prompt to improved results.
+
+### Test Scenario 1: Product Name Generation
+
+**Objective:** Validate the "aha moment" experience and framework education.
+
+**Steps:**
+
+1. **Submit vague prompt:**
+   ```
+   red can, fruits, sun, beach
+   ```
+
+2. **Observe generic AI response:**
+   - Expected: Generic, low-quality response (e.g., "Generic Soda")
+   - This demonstrates the problem with vague prompts
+
+3. **Click "Not Satisfied" button** (appears on most recent AI message)
+
+4. **Enter feedback:**
+   ```
+   Too generic, need creative product names
+   ```
+
+5. **Click "Generate Improved Prompt"**
+   - Loading indicator appears
+   - Wait for improvement API response
+
+6. **Review comparison modal:**
+   - **Left column**: Original vague prompt with mapping badges
+   - **Right column**: Improved R/T/E structured prompt with color-coded sections
+   - **Interactive elements**:
+     - Hover over Rules:/Task:/Examples: headers for educational tooltips
+     - Click mapping badges to see connections
+     - Observe visual highlighting
+
+7. **Click "Use This Prompt"**
+   - Modal closes
+   - Improved prompt appears in chat input field
+   - Input field flashes green (visual confirmation)
+   - Focus moves to input field
+
+8. **Review inserted prompt:**
+   ```
+   Rules: Premium positioning, ocean-safe ingredients
+   Task: Generate 10 creative product names for eco-friendly beverages
+   Examples: SunSplash, OceanBreeze, Beachside
+   ```
+
+9. **Click "Send" button** (manual submission required)
+   - Loading state appears
+   - Wait for OpenAI API response
+
+10. **Observe improved AI response:**
+    - Expected: Specific, creative names (e.g., "SunSplash Citrus Fizz, OceanBreeze Tropical, Beachside Berry Bliss")
+    - Quality difference is immediately obvious
+
+11. **Validate learning journey:**
+    - Complete conversation visible in chat history
+    - Both prompts and both responses preserved
+    - Side-by-side quality comparison proves framework works
+
+**Success Criteria:**
+✅ Original response is generic/poor quality
+✅ Improved response is specific/high quality
+✅ Quality difference is obvious to non-technical users
+✅ R/T/E framework structure is visible and explained
+✅ "Aha moment" achieved: "It actually works!"
+
+### Test Scenario 2: Iterative Improvement
+
+**Objective:** Verify users can refine prompts multiple times.
+
+**Steps:**
+
+1. Complete Test Scenario 1 above
+
+2. **Click "Not Satisfied"** on the improved AI response
+   - Button appears even on improved results
+   - Enables iterative refinement
+
+3. **Enter new feedback:**
+   ```
+   Need more upscale, luxury positioning
+   ```
+
+4. **Generate second improvement:**
+   - Process repeats with enhanced context
+   - New comparison shows further refinement
+
+5. **Test improved prompt again:**
+   - Submit and verify even better results
+
+**Success Criteria:**
+✅ "Not Satisfied" button works on any AI response
+✅ Iterative improvements build on previous context
+✅ Chat history preserves complete journey
+✅ No duplicate messages or state corruption
+
+### Test Scenario 3: Edge Cases
+
+**Test empty input submission:**
+- Try submitting without entering prompt
+- Expected: Validation error "Please enter a prompt"
+
+**Test very long prompt (>2000 characters):**
+- Paste 2500 character prompt
+- Expected: Validation error "Prompt is too long. Maximum 2000 characters."
+
+**Test rapid button clicks:**
+- Click Send button multiple times quickly
+- Expected: Button disabled during API call, prevents duplicate submissions
+
+**Test network timeout:**
+- Disconnect network during API call
+- Expected: Timeout error after 10 seconds with retry button
+
+**Test prompt customization:**
+- After "Use This Prompt", edit the inserted text
+- Submit modified version
+- Expected: Works normally with edited prompt
+
+**Test abandoned improved prompt:**
+- Click "Use This Prompt"
+- Clear input field without submitting
+- Expected: No error, user can abandon improved prompt
+
+**Success Criteria:**
+✅ All edge cases handled gracefully
+✅ Clear error messages for validation failures
+✅ Retry capability for recoverable errors
+✅ No crashes or state corruption
+
+### Expected Performance Metrics
+
+| Metric | Target | Typical Actual |
+|--------|--------|----------------|
+| Button click → API call | <100ms | ~5-10ms |
+| OpenAI chat API response | <10s | 500ms-2s |
+| OpenAI improvement API | <15s | 1-3s |
+| Chat history render (20 messages) | <500ms | ~20-50ms |
+| Comparison modal parsing | <200ms | ~10-50ms |
+| UI responsiveness during load | No lag | Fully responsive |
+
+**Performance monitoring:** Check browser console for warnings if parsing exceeds targets.
+
+### Accessibility Checklist
+
+- ✅ Keyboard navigation (Tab, Enter, Space, ESC)
+- ✅ Screen reader support (ARIA labels, live regions)
+- ✅ Focus management (input focus after modal close)
+- ✅ Semantic HTML (buttons, forms, headings)
+- ✅ Keyboard shortcuts (Enter to submit, ESC to close)
+- ✅ Focus trap in modals
+- ✅ Color contrast (WCAG AA compliant)
+
+**Screen reader test:** Enable VoiceOver (Mac) or NVDA (Windows) and complete Test Scenario 1 without using mouse.
+
 ## License
 
 MIT License - See LICENSE file for details
