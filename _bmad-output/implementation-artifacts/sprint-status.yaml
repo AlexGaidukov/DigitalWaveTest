@@ -41,8 +41,8 @@ story_location: {project-root}/_bmad-output/implementation-artifacts
 
 development_status:
   # Epic 1: Interactive Chat Testing
-  epic-1: backlog
-  1-1-project-initialization-html-scaffolding: backlog
+  epic-1: in-progress
+  1-1-project-initialization-html-scaffolding: done
   1-2-react-context-state-management: backlog
   1-3-chat-interface-components: backlog
   1-4-openai-api-integration: backlog
