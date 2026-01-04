@@ -276,12 +276,182 @@
       opacity: 0.9;
     }
 
+    /* Story 2.2: Feedback Modal Component styling */
+    /* Modal Overlay - Semi-transparent backdrop */
+    .feedback-modal__overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    /* Modal Container - Centered box */
+    .feedback-modal {
+      background-color: #ffffff;
+      border-radius: calc(var(--border-radius) * 2);
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Modal Header */
+    .feedback-modal__header {
+      padding: calc(var(--spacing-unit) * 2);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .feedback-modal__header h2 {
+      margin: 0;
+      font-size: 24px;
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    /* Modal Body */
+    .feedback-modal__body {
+      padding: calc(var(--spacing-unit) * 2);
+    }
+
+    /* Textarea Input */
+    .feedback-modal__textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: calc(var(--spacing-unit) * 1);
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      font-family: inherit;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    .feedback-modal__textarea:focus {
+      outline: 2px solid var(--color-primary);
+      border-color: transparent;
+    }
+
+    /* Modal Footer */
+    .feedback-modal__footer {
+      padding: calc(var(--spacing-unit) * 2);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: flex-end;
+      gap: calc(var(--spacing-unit) * 1);
+    }
+
+    /* Cancel Button - Secondary style */
+    .feedback-modal__cancel-button {
+      padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+      background-color: transparent;
+      border: 1px solid var(--color-primary);
+      color: var(--color-primary);
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.1s ease-in-out;
+    }
+
+    .feedback-modal__cancel-button:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* Submit Button - Primary style */
+    .feedback-modal__submit-button {
+      padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+      background-color: var(--color-primary);
+      border: none;
+      color: #ffffff;
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.1s ease-in-out;
+    }
+
+    .feedback-modal__submit-button:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    .feedback-modal__submit-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Character Counter */
+    .feedback-modal__char-counter {
+      margin-top: calc(var(--spacing-unit) * 0.5);
+      font-size: 12px;
+      color: #666;
+      text-align: right;
+    }
+
+    .feedback-modal__char-counter--warning {
+      color: #f57c00;
+    }
+
+    .feedback-modal__char-counter--danger {
+      color: #d32f2f;
+    }
+
+    /* Story 2.4: Loading Indicator */
+    .chat-interface__loading-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-unit);
+      padding: var(--spacing-unit);
+      margin: var(--spacing-unit) 0;
+      background-color: rgba(0, 0, 0, 0.02);
+      border-radius: var(--border-radius);
+      animation: fadeIn 200ms ease-in;
+    }
+
+    .chat-interface__loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .chat-interface__loading-text {
+      color: rgba(0, 0, 0, 0.6);
+      font-style: italic;
+      font-size: 14px;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Not Satisfied button disabled state */
     .message-bubble__not-satisfied:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      background-color: transparent;
-      color: var(--color-primary);
-      border-color: var(--color-primary);
+      background-color: rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
@@ -473,6 +643,18 @@
       );
     };
 
+    // LoadingIndicator - Display loading state with spinner (Story 2.4)
+    // Leaf component for showing feedback processing state
+    // Props: message (string) - Display text for loading indicator
+    const LoadingIndicator = ({ message = "Generating improvement..." }) => {
+      return (
+        <div className="chat-interface__loading-indicator">
+          <div className="chat-interface__loading-spinner"></div>
+          <span className="chat-interface__loading-text">{message}</span>
+        </div>
+      );
+    };
+
     // ValidationError - Display validation error messages (Story 1.5)
     // Leaf component for inline validation feedback
     // Memoized to prevent unnecessary re-renders
@@ -509,6 +691,7 @@
     // MessageBubble - Display individual chat message with role-based styling
     // AC #2: MessageBubble component with message object and type prop
     // Story 2.1: Added showNotSatisfiedButton, onNotSatisfied, disabled props for "Not Satisfied" button
+    // Story 2.4: Button disabled when isGeneratingImprovement is true
     const MessageBubble = ({ message, type, showNotSatisfiedButton, onNotSatisfied, disabled }) => {
       const typeClass = type === 'sent' ? 'chat-interface__message--sent' : 'chat-interface__message--received';
       const isAI = message.role === 'assistant';
@@ -519,6 +702,7 @@
             {message.content}
           </div>
           {/* Story 2.1: Conditionally render "Not Satisfied" button on AI messages (outside content div for proper spacing) */}
+          {/* Story 2.4: Button disabled during improvement generation */}
           {showNotSatisfiedButton && isAI && (
             <button
               className="message-bubble__not-satisfied"
@@ -537,7 +721,8 @@
     // MessageList - Display list of chat messages with auto-scroll
     // AC #3: MessageList component with auto-scroll and empty state
     // Story 2.1: Added mostRecentAIMessage, onNotSatisfied, isFeedbackModalOpen props for "Not Satisfied" button
-    const MessageList = ({ messages, mostRecentAIMessage, onNotSatisfied, isFeedbackModalOpen }) => {
+    // Story 2.4: Added isGeneratingImprovement to disable button during loading
+    const MessageList = ({ messages, mostRecentAIMessage, onNotSatisfied, isFeedbackModalOpen, isGeneratingImprovement }) => {
       const messagesEndRef = React.useRef(null);
 
       // Auto-scroll to bottom when messages change
@@ -567,7 +752,7 @@
                 type={message.role === 'user' ? 'sent' : 'received'}
                 showNotSatisfiedButton={isMostRecentAI}
                 onNotSatisfied={onNotSatisfied}
-                disabled={isFeedbackModalOpen}
+                disabled={isFeedbackModalOpen || isGeneratingImprovement}
               />
             );
           })}
@@ -578,8 +763,9 @@
 
     // ChatInput - Input field with send button
     // AC #4: ChatInput component with onSubmit and isLoading props
+    // Story 2.4: Added optional disable during improvement generation
     const ChatInput = ({ onSubmit, isLoading = false }) => {
-      const { validationError, setValidationError } = useAppContext();
+      const { validationError, setValidationError, isGeneratingImprovement } = useAppContext();
       const [inputValue, setInputValue] = React.useState('');
       const inputRef = React.useRef(null);
 
@@ -616,6 +802,9 @@
         onSubmit(userPrompt);
       }, [inputValue, setValidationError, onSubmit]);
 
+      // Story 2.4: Disable input during chat loading OR improvement generation
+      const isDisabled = isLoading || isGeneratingImprovement;
+
       return (
         <>
           <form className="chat-interface__input-form" onSubmit={handleSubmit}>
@@ -625,12 +814,12 @@
               type="text"
               value={inputValue}
               onChange={handleChange}
-              placeholder="Enter your prompt..."
-              disabled={isLoading}
+              placeholder={isGeneratingImprovement ? "Please wait while we generate your improvement..." : "Enter your prompt..."}
+              disabled={isDisabled}
             />
             <Button
               onClick={handleSubmit}
-              disabled={isLoading || !inputValue.trim()}
+              disabled={isDisabled || !inputValue.trim()}
             >
               {isLoading ? 'Sending...' : 'Send'}
             </Button>
@@ -645,8 +834,9 @@
     // ChatInterface - Main chat layout with message list and input
     // AC #5: ChatInterface component using useAppContext
     // Story 2.1: Added logic to find most recent AI message and handle "Not Satisfied" button
+    // Story 2.4: Added LoadingIndicator for feedback processing state
     const ChatInterface = () => {
-      const { chatHistory, isChatLoading, chatError, addMessage, setChatError, setIsChatLoading, setValidationError, isFeedbackModalOpen, setIsFeedbackModalOpen, setRecentFeedback } = useAppContext();
+      const { chatHistory, isChatLoading, chatError, addMessage, setChatError, setIsChatLoading, setValidationError, isFeedbackModalOpen, setIsFeedbackModalOpen, setRecentFeedback, isGeneratingImprovement } = useAppContext();
       const [pendingPrompt, setPendingPrompt] = React.useState(null);
 
       // Story 2.1: Find most recent AI response for "Not Satisfied" button
@@ -658,21 +848,10 @@
       const mostRecentAIMessage = getMostRecentAIMessage();
 
       // Story 2.1: Handle "Not Satisfied" button click
-      // Stores the message context (prompt and response) for the feedback modal (Story 2.2)
+      // Opens feedback modal - Story 2.3 will capture feedback data on submit
       const handleNotSatisfied = React.useCallback(() => {
-        // Find the user prompt that corresponds to this AI response
-        const messageIndex = chatHistory.findIndex(msg => msg === mostRecentAIMessage);
-        const userPrompt = messageIndex > 0 ? chatHistory[messageIndex - 1] : null;
-
-        // Store feedback context for Story 2.2 modal
-        setRecentFeedback({
-          userPrompt: userPrompt?.content || '',
-          aiResponse: mostRecentAIMessage?.content || '',
-          timestamp: new Date().toISOString()
-        });
-
         setIsFeedbackModalOpen(true);
-      }, [mostRecentAIMessage, chatHistory, setRecentFeedback, setIsFeedbackModalOpen]);
+      }, [setIsFeedbackModalOpen]);
 
       // API integration submit handler - Story 1.4 implementation with retry support
       // Optimized with useCallback to prevent unnecessary re-renders
@@ -725,7 +904,14 @@
             mostRecentAIMessage={mostRecentAIMessage}
             onNotSatisfied={handleNotSatisfied}
             isFeedbackModalOpen={isFeedbackModalOpen}
+            isGeneratingImprovement={isGeneratingImprovement}
           />
+
+          {/* Story 2.4: Loading Indicator - Shows when improvement is being generated */}
+          {isGeneratingImprovement && (
+            <LoadingIndicator message="Generating improvement..." />
+          )}
+
           {chatError && <ErrorDisplay error={chatError} onRetry={handleRetry} />}
           <div className="chat-interface__input-container">
             <ChatInput onSubmit={handleSubmit} isLoading={isChatLoading} />
@@ -733,6 +919,131 @@
         </div>
       );
     };
+
+    // FeedbackModal - Layout component (Story 2.2)
+    // Modal dialog for collecting user feedback about AI responses
+    // Props: isOpen (boolean), onClose (callback), onSubmit (callback with feedbackText)
+    // Architecture: feedbackText stored in LOCAL state (not context) - form data should be
+    // ephemeral and component-scoped, not polluting global state
+    // Memoized to prevent unnecessary re-renders when parent App re-renders
+    const FeedbackModal = React.memo(({ isOpen, onClose, onSubmit }) => {
+      const [feedbackText, setFeedbackText] = React.useState('');
+      const [isSubmitting, setIsSubmitting] = React.useState(false);
+      const textareaRef = React.useRef(null);
+
+      // Define handleClose with useCallback to prevent ESC effect from re-running unnecessarily
+      const handleClose = React.useCallback(() => {
+        setFeedbackText(''); // Clear feedback text
+        setIsSubmitting(false); // Reset submitting state
+        onClose(); // Call parent callback
+      }, [onClose]);
+
+      // Auto-focus textarea when modal opens
+      // Note: No cleanup needed - focus is a one-time side effect
+      React.useEffect(() => {
+        if (isOpen && textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }, [isOpen]);
+
+      // ESC key handler - now safe with handleClose memoized
+      React.useEffect(() => {
+        const handleEsc = (event) => {
+          if (event.key === 'Escape' && isOpen) {
+            handleClose();
+          }
+        };
+
+        document.addEventListener('keydown', handleEsc);
+        return () => document.removeEventListener('keydown', handleEsc);
+      }, [isOpen, handleClose]);
+
+      const handleSubmit = () => {
+        // Guard against double submission
+        if (isSubmitting) return;
+
+        // Validate feedback text
+        if (!feedbackText.trim()) {
+          return; // Button should be disabled, but defensive check
+        }
+
+        // Set submitting state
+        setIsSubmitting(true);
+
+        // Call parent submit handler
+        onSubmit(feedbackText);
+
+        // Note: Modal will close via parent's setIsFeedbackModalOpen(false)
+        // State will be reset when modal closes via handleClose
+      };
+
+      const handleOverlayClick = (event) => {
+        // Close only if overlay is clicked, not modal container
+        if (event.target === event.currentTarget) {
+          handleClose();
+        }
+      };
+
+      if (!isOpen) return null;
+
+      return (
+        <div className="feedback-modal__overlay" onClick={handleOverlayClick}>
+          <div
+            className="feedback-modal"
+            role="dialog"
+            aria-labelledby="feedback-modal-title"
+            aria-describedby="feedback-modal-description"
+          >
+            {/* Header */}
+            <div className="feedback-modal__header">
+              <h2 id="feedback-modal-title">Let's improve this result</h2>
+            </div>
+
+            {/* Body */}
+            <div className="feedback-modal__body">
+              <textarea
+                ref={textareaRef}
+                id="feedback-modal-description"
+                className="feedback-modal__textarea"
+                placeholder="What didn't you like about this result?"
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                rows={3}
+                maxLength={500}
+                aria-label="Feedback input"
+                disabled={isSubmitting}
+              />
+              <p
+                className={`feedback-modal__char-counter ${
+                  feedbackText.length > 450 ? 'feedback-modal__char-counter--danger' :
+                  feedbackText.length > 400 ? 'feedback-modal__char-counter--warning' : ''
+                }`}
+              >
+                {feedbackText.length} / 500 characters
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="feedback-modal__footer">
+              <button
+                className="feedback-modal__cancel-button"
+                onClick={handleClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                className="feedback-modal__submit-button"
+                onClick={handleSubmit}
+                disabled={!feedbackText.trim() || isSubmitting}
+              >
+                {isSubmitting ? 'Generating...' : 'Generate Improved Prompt'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    });
 
     // ============================================================
     // SECTION 5: CONTEXT PROVIDER
@@ -827,9 +1138,72 @@
     // SECTION 6: MAIN APP COMPONENT
     // ============================================================
     const App = () => {
+      const {
+        isFeedbackModalOpen,
+        setIsFeedbackModalOpen,
+        chatHistory,
+        setRecentFeedback,
+        setIsGeneratingImprovement,
+        setImprovementError
+      } = useAppContext();
+
+      const handleFeedbackClose = () => {
+        setIsFeedbackModalOpen(false);
+      };
+
+      const handleFeedbackSubmit = (feedbackText) => {
+        // Extract most recent messages from chat history
+        // Find last user message
+        const userMessages = chatHistory.filter(msg => msg.role === 'user');
+        const lastUserMessage = userMessages[userMessages.length - 1];
+
+        // Find last assistant message
+        const assistantMessages = chatHistory.filter(msg => msg.role === 'assistant');
+        const lastAssistantMessage = assistantMessages[assistantMessages.length - 1];
+
+        // Edge case: No messages (shouldn't happen, but defensive)
+        if (!lastUserMessage || !lastAssistantMessage) {
+          console.error('No messages found in chat history');
+          return;
+        }
+
+        // Create feedback object
+        const feedback = {
+          userPrompt: lastUserMessage.content,
+          aiResponse: lastAssistantMessage.content,
+          feedbackText: feedbackText,
+          timestamp: Date.now()
+        };
+
+        // Store feedback in context
+        setRecentFeedback(feedback);
+
+        // Clear any previous improvement errors
+        setImprovementError(null);
+
+        // Trigger improvement generation state (Epic 3 will implement actual API call)
+        setIsGeneratingImprovement(true);
+
+        // Close feedback modal
+        setIsFeedbackModalOpen(false);
+
+        // TODO: Epic 3 will implement the actual improvement API call
+        // Temporary: Reset isGeneratingImprovement after 2 seconds for testing
+        setTimeout(() => {
+          setIsGeneratingImprovement(false);
+        }, 2000);
+      };
+
       return (
         <div className="app-container">
           <ChatInterface />
+
+          {/* Feedback Modal */}
+          <FeedbackModal
+            isOpen={isFeedbackModalOpen}
+            onClose={handleFeedbackClose}
+            onSubmit={handleFeedbackSubmit}
+          />
         </div>
       );
     };

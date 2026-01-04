@@ -52,16 +52,16 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: Failure-Driven Feedback Capture
-  epic-2: in-progress
+  epic-2: done
   2-1-not-satisfied-button-integration: done
-  2-2-feedback-modal-component: backlog
-  2-3-feedback-submission-handler: backlog
-  2-4-feedback-processing-state: backlog
+  2-2-feedback-modal-component: done
+  2-3-feedback-submission-handler: done
+  2-4-feedback-processing-state: done
   epic-2-retrospective: optional
 
   # Epic 3: AI-Powered Prompt Transformation
-  epic-3: backlog
-  3-1-improvement-api-integration: backlog
+  epic-3: in-progress
+  3-1-improvement-api-integration: ready-for-dev
   3-2-prompt-analysis-restructuring: backlog
   3-3-response-parsing-data-storage: backlog
   epic-3-retrospective: optional
