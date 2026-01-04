@@ -1112,7 +1112,10 @@ Return JSON with:
         console.warn(`parseImprovedPrompt took ${parsingTime.toFixed(2)}ms (target: <200ms)`);
       }
 
-      return highlights;
+      // CRITICAL: Sort highlights by startIndex to ensure correct rendering order
+      // Without sorting, highlights are in detection order (Rules, Task, Examples)
+      // but need to be in text position order for proper segment creation
+      return highlights.sort((a, b) => a.startIndex - b.startIndex);
     };
 
     // Error formatting utility - maps technical errors to user-friendly messages

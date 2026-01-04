@@ -267,15 +267,13 @@ The Task section MUST come first, followed by Rules, then Examples.
 - Make it actionable and educational
 
 **Response Format (JSON):**
-Return valid JSON with this exact structure. The improvedPrompt field must contain EXACTLY THREE sections in this order, each appearing ONCE:
-
-CORRECT FORMAT (each section appears once):
+Return valid JSON with this exact structure:
 {
-  "improvedPrompt": "Task: Generate 10 creative product names for a premium sunscreen brand targeting active families.\\n\\nRules: Names must be family-friendly, convey premium quality, and suggest ocean-safe ingredients. Avoid generic terms.\\n\\nExamples: Consider names like 'Blue Horizon', 'Safe Shores', or 'Family Guard' that combine protection with lifestyle appeal.",
+  "improvedPrompt": "Task: [clear instruction]\\n\\nRules: [constraints]\\n\\nExamples: [references]",
   "mapping": [
     {
       "originalSentence": "[exact text from original prompt]",
-      "improvedSections": ["Task", "Rules"]
+      "improvedSections": ["Task", "Rules", "Examples"]
     }
   ],
   "explanations": [
@@ -294,23 +292,11 @@ CORRECT FORMAT (each section appears once):
   ]
 }
 
-INCORRECT (DO NOT DO THIS - has duplicate sections):
-{
-  "improvedPrompt": "Task: Generate names.\\n\\nRules: Be creative.\\n\\nTask: Generate names.\\n\\nRules: Be creative."
-}
-
 **CRITICAL: The improvedPrompt MUST follow this order: Task first, then Rules, then Examples. This is best practice for prompt engineering.**
-
-**CRITICAL: Each section appears EXACTLY ONCE - NO DUPLICATES!**
-- Task section appears ONE TIME at the beginning
-- Rules section appears ONE TIME after Task
-- Examples section appears ONE TIME after Rules (if applicable)
-- NEVER repeat or duplicate any section
 
 **Quality Checks:**
 - improvedPrompt must be a non-empty string with clear Task/Rules/Examples structure IN THAT ORDER
 - The improved prompt MUST start with "Task:" as the first section
-- Each section (Task, Rules, Examples) must appear EXACTLY ONCE - no duplicates allowed
 - mapping must be an array with at least one item
 - Every original sentence must be included in mapping
 - Each mapping item must have originalSentence (string) and improvedSections (array of strings)
@@ -369,39 +355,6 @@ Now analyze the user's original prompt and feedback, then return the improved ve
         "INVALID_RESPONSE",
         "Missing or invalid improvedPrompt",
         "Expected non-empty string"
-      );
-    }
-
-    // CRITICAL: Validate NO DUPLICATE sections in improved prompt
-    const promptText = improvementData.improvedPrompt;
-    const taskMatches = promptText.match(/Task:/gi);
-    const rulesMatches = promptText.match(/Rules:/gi);
-    const examplesMatches = promptText.match(/Examples:/gi);
-
-    if (taskMatches && taskMatches.length > 1) {
-      console.error('Duplicate Task sections detected:', taskMatches.length);
-      return createErrorResponse(
-        "INVALID_RESPONSE",
-        "AI generated duplicate Task sections",
-        `Found ${taskMatches.length} Task sections, expected 1`
-      );
-    }
-
-    if (rulesMatches && rulesMatches.length > 1) {
-      console.error('Duplicate Rules sections detected:', rulesMatches.length);
-      return createErrorResponse(
-        "INVALID_RESPONSE",
-        "AI generated duplicate Rules sections",
-        `Found ${rulesMatches.length} Rules sections, expected 1`
-      );
-    }
-
-    if (examplesMatches && examplesMatches.length > 1) {
-      console.error('Duplicate Examples sections detected:', examplesMatches.length);
-      return createErrorResponse(
-        "INVALID_RESPONSE",
-        "AI generated duplicate Examples sections",
-        `Found ${examplesMatches.length} Examples sections, expected 1`
       );
     }
 
