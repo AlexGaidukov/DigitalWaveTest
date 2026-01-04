@@ -267,13 +267,15 @@ The Task section MUST come first, followed by Rules, then Examples.
 - Make it actionable and educational
 
 **Response Format (JSON):**
-Return valid JSON with this exact structure:
+Return valid JSON with this exact structure. The improvedPrompt field must contain EXACTLY THREE sections in this order, each appearing ONCE:
+
+CORRECT FORMAT (each section appears once):
 {
-  "improvedPrompt": "Task: [clear instruction]\\n\\nRules: [constraints]\\n\\nExamples: [references]",
+  "improvedPrompt": "Task: Generate 10 creative product names for a premium sunscreen brand targeting active families.\\n\\nRules: Names must be family-friendly, convey premium quality, and suggest ocean-safe ingredients. Avoid generic terms.\\n\\nExamples: Consider names like 'Blue Horizon', 'Safe Shores', or 'Family Guard' that combine protection with lifestyle appeal.",
   "mapping": [
     {
       "originalSentence": "[exact text from original prompt]",
-      "improvedSections": ["Task", "Rules", "Examples"]
+      "improvedSections": ["Task", "Rules"]
     }
   ],
   "explanations": [
@@ -290,6 +292,11 @@ Return valid JSON with this exact structure:
       "tooltip": "Examples anchor the AI's understanding of your desired style, giving it a concrete reference point for the output."
     }
   ]
+}
+
+INCORRECT (DO NOT DO THIS - has duplicate sections):
+{
+  "improvedPrompt": "Task: Generate names.\\n\\nRules: Be creative.\\n\\nTask: Generate names.\\n\\nRules: Be creative."
 }
 
 **CRITICAL: The improvedPrompt MUST follow this order: Task first, then Rules, then Examples. This is best practice for prompt engineering.**
