@@ -347,6 +347,40 @@ const LoadingIndicator = ({ message = "Generating improvement..." }) => {
   );
 };
 
+// AnnouncementBanner - Leaf component for displaying important announcements
+// Shows informational messages to users at the bottom of chat area
+const AnnouncementBanner = () => {
+  const { chatHistory } = useAppContext();
+
+  // Only show if no user messages have been sent
+  const shouldShow = chatHistory.length === 0;
+
+  if (!shouldShow) {
+    return null;
+  }
+
+  return (
+    <div
+      className="chat-interface__announcement-banner"
+      role="status"
+      aria-live="polite"
+      aria-label="Product information announcement"
+    >
+      <span className="chat-interface__announcement-icon">ℹ️</span>
+      <div className="chat-interface__announcement-content">
+        <p className="chat-interface__announcement-text">
+          Note: This demo includes only 3 products
+        </p>
+        <ul className="chat-interface__announcement-list">
+          <li className="chat-interface__announcement-list-item">Coca Cola 6 pack</li>
+          <li className="chat-interface__announcement-list-item">Monini Olive Oil</li>
+          <li className="chat-interface__announcement-list-item">Can of Sweet Pees</li>
+        </ul>
+      </div>
+    </div>
+  );
+};
+
 // ValidationError - Display validation error messages (Story 1.5)
 // Leaf component for inline validation feedback
 // Memoized to prevent unnecessary re-renders
@@ -1124,6 +1158,9 @@ const ChatInterface = ({ chatInputValue, setChatInputValue, chatInputRef, isInpu
       {isGeneratingImprovement && (
         <LoadingIndicator message="Generating improvement..." />
       )}
+
+      {/* Announcement Banner */}
+      <AnnouncementBanner />
 
       <div className="chat-interface__input-container">
         <ChatInput

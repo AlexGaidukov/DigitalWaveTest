@@ -21,7 +21,6 @@ Generate a product name for website display for the selected product that contai
 If the user requests attributes that are NOT present in the product description:
 - Do NOT invent, infer, or guess them
 - Exclude them from the product name
-- Explicitly report which requested attributes were unavailable
 
 ## Strict Rules
 You MUST:
