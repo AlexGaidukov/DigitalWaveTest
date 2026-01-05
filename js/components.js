@@ -71,12 +71,42 @@ class ErrorBoundary extends React.Component {
 const Tooltip = ({ children, content }) => {
   const [isVisible, setIsVisible] = React.useState(false);
   const [timeoutId, setTimeoutId] = React.useState(null);
+  const [position, setPosition] = React.useState({ top: 0, left: 0 });
   const tooltipRef = React.useRef(null);
+  const triggerRef = React.useRef(null);
 
   // Show tooltip with small delay to prevent accidental triggers
   const handleMouseEnter = React.useCallback(() => {
     const id = setTimeout(() => {
       setIsVisible(true);
+      // Calculate position based on trigger element
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        const tooltipWidth = 300; // Estimated width
+        const tooltipHeight = 100; // Estimated height
+        const offset = 7; // Distance from element (reduced from 10 to ~7)
+
+        // Position above the element, centered horizontally
+        let top = rect.top - tooltipHeight - offset;
+        let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+
+        // Adjust if tooltip would go above viewport
+        if (top < 10) {
+          top = rect.bottom + offset; // Show below instead
+        }
+
+        // Adjust if tooltip would go off left edge
+        if (left < 10) {
+          left = 10;
+        }
+
+        // Adjust if tooltip would go off right edge
+        if (left + tooltipWidth > window.innerWidth - 10) {
+          left = window.innerWidth - tooltipWidth - 10;
+        }
+
+        setPosition({ top, left });
+      }
     }, 100); // 100ms delay
     setTimeoutId(id);
   }, []);
@@ -92,6 +122,24 @@ const Tooltip = ({ children, content }) => {
   // Handle keyboard accessibility
   const handleFocus = React.useCallback(() => {
     setIsVisible(true);
+    // Recalculate position on focus
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const tooltipWidth = 300;
+      const tooltipHeight = 100;
+      const offset = 7; // Distance from element (reduced from 10 to ~7)
+
+      let top = rect.top - tooltipHeight - offset;
+      let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+
+      if (top < 10) top = rect.bottom + offset;
+      if (left < 10) left = 10;
+      if (left + tooltipWidth > window.innerWidth - 10) {
+        left = window.innerWidth - tooltipWidth - 10;
+      }
+
+      setPosition({ top, left });
+    }
   }, []);
 
   const handleBlur = React.useCallback(() => {
@@ -133,6 +181,7 @@ const Tooltip = ({ children, content }) => {
       ref={tooltipRef}
     >
       <span
+        ref={triggerRef}
         onFocus={handleFocus}
         onBlur={handleBlur}
         tabIndex={0}
@@ -145,6 +194,10 @@ const Tooltip = ({ children, content }) => {
         <div
           id={contentId}
           className="tooltip__content"
+          style={{
+            top: `${position.top}px`,
+            left: `${position.left}px`
+          }}
           role="tooltip"
           aria-live="polite"
         >
@@ -427,15 +480,27 @@ const ImprovedPromptWithBadges = ({ text, highlights, explanations }) => {
     <span className="improved-prompt-with-badges">
       {segmentsWithBadges.map((segment, index) => {
         if (segment.type) {
-          // Highlighted segment - wrap with section-specific tooltip
-          const tooltipContent = getTooltipForSection(segment.section);
+          // Check if this is a section header (contains Task:, Rules:, or Examples:)
+          const isSectionHeader = /task:|rules:|examples:/i.test(segment.text);
 
+          // Only show tooltip on section content, NOT on headers
+          if (!isSectionHeader && segment.section) {
+            const tooltipContent = getTooltipForSection(segment.section);
+
+            return (
+              <Tooltip key={index} content={tooltipContent}>
+                <span className={`highlighted-text__segment highlighted-text__segment--${segment.type}`}>
+                  {segment.text}
+                </span>
+              </Tooltip>
+            );
+          }
+
+          // Section headers and content without section get no tooltip
           return (
-            <Tooltip key={index} content={tooltipContent}>
-              <span className={`highlighted-text__segment highlighted-text__segment--${segment.type}`}>
-                {segment.text}
-              </span>
-            </Tooltip>
+            <span key={index} className={`highlighted-text__segment highlighted-text__segment--${segment.type}`}>
+              {segment.text}
+            </span>
           );
         }
         // Non-highlighted text - no tooltip

@@ -704,9 +704,6 @@ body {
 
 .tooltip__content {
   position: fixed; /* Fixed positioning to avoid clipping by modal overflow */
-  top: 50%; /* Center vertically - will be positioned by JS */
-  left: 50%; /* Center horizontally - will be positioned by JS */
-  transform: translate(-50%, -50%); /* Center on viewport */
   max-width: 500px; /* Much wider for better readability */
   min-width: 300px; /* Minimum width for consistent appearance */
   padding: 16px 20px; /* More padding for better readability */
@@ -733,11 +730,11 @@ body {
 @keyframes tooltipFadeIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
 }
 
