@@ -339,40 +339,73 @@ const MessageBubble = ({ message, type, showNotSatisfiedButton, onNotSatisfied, 
 //        explanations (array) - Section explanations from comparisonData.explanations (Story 4.4)
 const ImprovedPromptWithBadges = ({ text, highlights, explanations }) => {
 
-  // Story 4.4: Helper function to get educational tooltip content for a section
-  // Now used for tooltip on the entire improved prompt
-  const getTooltipContent = React.useCallback(() => {
+  // Helper function to determine which section a highlight belongs to
+  // Matches the highlight text to section names (Task, Rules, Examples)
+  const getSectionForHighlight = React.useCallback((highlightText) => {
+    if (!highlightText) return null;
+
+    const lowerText = highlightText.toLowerCase();
+
+    // Check if this highlight contains a section header
+    if (lowerText.includes('task:')) return 'Task';
+    if (lowerText.includes('rules:')) return 'Rules';
+    if (lowerText.includes('examples:')) return 'Examples';
+
+    // If no section header, try to infer from position relative to other highlights
+    // This handles content highlights (after the section headers)
+    return null;
+  }, []);
+
+  // Helper function to get tooltip content for a specific section
+  const getTooltipForSection = React.useCallback((section) => {
     if (!explanations || explanations.length === 0) {
       // Fallback to generic framework education tooltip
       return "This improved prompt follows the R/T/E framework: Rules establish constraints, Task defines what to generate, and Examples provide reference points for better AI responses.";
     }
 
-    // Combine all explanations for comprehensive tooltip
-    return explanations.map(ex => ex.tooltip || `This ${ex.section.toLowerCase()} section helps structure your prompt.`).join(' ');
+    // Find the explanation for this specific section
+    const explanation = explanations.find(ex => ex.section === section);
+    if (explanation && explanation.tooltip) {
+      return explanation.tooltip;
+    }
+
+    // Fallback to section-specific generic message
+    return `This ${section.toLowerCase()} section helps structure your prompt.`;
   }, [explanations]);
 
-  // Parse highlights and create segments
+  // Parse highlights and create segments with section information
   const segmentsWithBadges = React.useMemo(() => {
     if (!highlights || highlights.length === 0) {
-      return [{ text, type: null }];
+      return [{ text, type: null, section: null }];
     }
 
     const segments = [];
     let lastIndex = 0;
+    let currentSection = null; // Track which section we're currently in
 
     highlights.forEach(highlight => {
       // Add non-highlighted text before this highlight
       if (highlight.startIndex > lastIndex) {
         segments.push({
           text: text.substring(lastIndex, highlight.startIndex),
-          type: null
+          type: null,
+          section: null
         });
       }
 
-      // Add highlighted segment
+      // Determine which section this highlight belongs to
+      const section = getSectionForHighlight(highlight.text);
+
+      // Update current section if we hit a new section header
+      if (section) {
+        currentSection = section;
+      }
+
+      // Add highlighted segment with section information
       segments.push({
         text: text.substring(highlight.startIndex, highlight.endIndex),
-        type: highlight.type
+        type: highlight.type,
+        section: section || currentSection // Use detected section or inherited section
       });
 
       lastIndex = highlight.endIndex;
@@ -382,31 +415,33 @@ const ImprovedPromptWithBadges = ({ text, highlights, explanations }) => {
     if (lastIndex < text.length) {
       segments.push({
         text: text.substring(lastIndex),
-        type: null
+        type: null,
+        section: null
       });
     }
 
     return segments;
-  }, [text, highlights]);
+  }, [text, highlights, getSectionForHighlight]);
 
   return (
-    <Tooltip content={getTooltipContent()}>
-      <span className="improved-prompt-with-badges">
-        {segmentsWithBadges.map((segment, index) => {
-          if (segment.type) {
-            return (
-              <span
-                key={index}
-                className={`highlighted-text__segment highlighted-text__segment--${segment.type}`}
-              >
+    <span className="improved-prompt-with-badges">
+      {segmentsWithBadges.map((segment, index) => {
+        if (segment.type) {
+          // Highlighted segment - wrap with section-specific tooltip
+          const tooltipContent = getTooltipForSection(segment.section);
+
+          return (
+            <Tooltip key={index} content={tooltipContent}>
+              <span className={`highlighted-text__segment highlighted-text__segment--${segment.type}`}>
                 {segment.text}
               </span>
-            );
-          }
-          return <span key={index}>{segment.text}</span>;
-        })}
-      </span>
-    </Tooltip>
+            </Tooltip>
+          );
+        }
+        // Non-highlighted text - no tooltip
+        return <span key={index}>{segment.text}</span>;
+      })}
+    </span>
   );
 };
 
