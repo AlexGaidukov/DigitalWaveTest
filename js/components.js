@@ -291,6 +291,32 @@ const HighlightedText = ({ text, highlights }) => {
   );
 };
 
+// AutoImproveToggle - Leaf component for toggle switch (Story 7.2)
+// Controls automatic prompt improvement feature
+// Props: isEnabled (boolean) - Current toggle state
+//        onToggle (function) - Callback when toggle is clicked
+// Accessibility: Keyboard accessible (Enter/Space via native button behavior),
+//                ARIA switch role, screen reader support, focus visible state
+const AutoImproveToggle = ({ isEnabled, onToggle }) => {
+  return (
+    <div className={`auto-improve-toggle ${isEnabled ? 'auto-improve-toggle--active' : ''}`}>
+      <label htmlFor="auto-improve-switch" className="auto-improve-toggle__label">
+        Automatically Improve Prompt
+      </label>
+      <button
+        id="auto-improve-switch"
+        className="auto-improve-toggle__switch"
+        role="switch"
+        aria-checked={isEnabled}
+        onClick={onToggle}
+        type="button"
+      >
+        <span className="auto-improve-toggle__slider"></span>
+      </button>
+    </div>
+  );
+};
+
 // Button - Reusable button component with disabled state
 // AC #1: Button component with children, onClick, disabled, className props
 const Button = ({ children, onClick, disabled = false, className = '' }) => {
@@ -591,8 +617,13 @@ const RetryButton = ({ onRetry, error, isRetrying }) => {
 // Story 2.4: Added optional disable during improvement generation
 // Story 5.4: Added error, onRetry, and isRetrying props for error display with retry
 const ChatInput = React.forwardRef(({ onSubmit, isLoading = false, value, onChange, isHighlighted = false, error, onRetry, isRetrying }, ref) => {
-  const { validationError, setValidationError, isGeneratingImprovement } = useAppContext();
+  const { validationError, setValidationError, isGeneratingImprovement, isAutoImproveEnabled, setIsAutoImproveEnabled } = useAppContext();
   const inputRef = React.useRef(null);
+
+  // Story 7.2: Toggle handler for auto-improve feature
+  const handleToggleAutoImprove = React.useCallback(() => {
+    setIsAutoImproveEnabled(prev => !prev);
+  }, [setIsAutoImproveEnabled]);
 
   // Story 5.1: Expose focus method via useImperativeHandle
   React.useImperativeHandle(ref, () => ({
@@ -643,6 +674,11 @@ const ChatInput = React.forwardRef(({ onSubmit, isLoading = false, value, onChan
   return (
     <>
       {error && <RetryButton error={error} onRetry={onRetry} isRetrying={isRetrying} />}
+      {/* Story 7.2: Auto-Improve Toggle */}
+      <AutoImproveToggle
+        isEnabled={isAutoImproveEnabled}
+        onToggle={handleToggleAutoImprove}
+      />
       <form className="chat-interface__input-form" onSubmit={handleSubmit}>
         <input
           ref={inputRef}
@@ -1292,6 +1328,9 @@ const AppProvider = ({ children }) => {
   // Feedback context
   const [recentFeedback, setRecentFeedback] = React.useState(null);
 
+  // Story 7.2: Auto-improve toggle state
+  const [isAutoImproveEnabled, setIsAutoImproveEnabled] = React.useState(false);
+
   // Story 4.1: Close comparison modal handler
   const handleCloseComparisonModal = () => {
     setIsComparisonModalOpen(false);
@@ -1324,6 +1363,8 @@ const AppProvider = ({ children }) => {
     isGeneratingImprovement,
     improvementError,
     recentFeedback,
+    // Story 7.2: Auto-improve toggle state
+    isAutoImproveEnabled,
     // State updaters
     setChatHistory,
     setIsChatLoading,
@@ -1335,6 +1376,8 @@ const AppProvider = ({ children }) => {
     setIsGeneratingImprovement,
     setImprovementError,
     setRecentFeedback,
+    // Story 7.2: Auto-improve toggle updater
+    setIsAutoImproveEnabled,
     // Helper functions
     addMessage,
     clearChat,
@@ -1349,7 +1392,8 @@ const AppProvider = ({ children }) => {
     comparisonData,
     isGeneratingImprovement,
     improvementError,
-    recentFeedback
+    recentFeedback,
+    isAutoImproveEnabled
   ]);
 
   return (

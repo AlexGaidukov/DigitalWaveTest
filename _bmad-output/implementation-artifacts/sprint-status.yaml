@@ -1,4 +1,4 @@
-# generated: 2026-01-04
+# generated: 2026-01-05
 # project: DigitalWaveTest
 # project_key: digitalwavetest
 # tracking_system: file-system
@@ -33,7 +33,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-01-04
+generated: 2026-01-05
 project: DigitalWaveTest
 project_key: digitalwavetest
 tracking_system: file-system
@@ -42,7 +42,6 @@ story_location: {project-root}/_bmad-output/implementation-artifacts
 development_status:
   # Epic 1: Interactive Chat Testing
   epic-1: done
-  # CORRECTED SEQUENCE: Story 1.0 must be implemented before 1.4+ (per sprint-change-proposal-2026-01-04.md)
   1-0-cloudflare-worker-implementation: done
   1-1-project-initialization-html-scaffolding: done
   1-2-react-context-state-management: done
@@ -83,6 +82,13 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6: Prompt Structure Optimization
-  epic-6: in-progress
+  epic-6: done
   6-1-prompt-structure-reorder: done
   epic-6-retrospective: optional
+
+  # Epic 7: Automatic Prompt Improvement
+  epic-7: in-progress
+  7-1-auto-improvement-rules-worker-endpoint: done
+  7-2-auto-improve-toggle-component: done
+  7-3-auto-improvement-chat-flow-integration: backlog
+  epic-7-retrospective: optional

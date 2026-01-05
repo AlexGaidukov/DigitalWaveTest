@@ -953,3 +953,74 @@ body {
   outline: 2px solid #dc2626;
   outline-offset: 2px;
 }
+
+/* Story 7.2: Auto-Improve Toggle Component */
+/* Toggle Container */
+.auto-improve-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: var(--border-radius, 4px);
+  background-color: #f5f5f5;
+  transition: background-color 200ms ease-in-out;
+}
+
+.auto-improve-toggle--active {
+  background-color: #e8f5e9; /* Light green background when active */
+}
+
+/* Toggle Label */
+.auto-improve-toggle__label {
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Toggle Switch Button */
+.auto-improve-toggle__switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background-color: #ccc; /* Gray when OFF */
+  cursor: pointer;
+  transition: background-color 200ms ease-in-out;
+}
+
+.auto-improve-toggle--active .auto-improve-toggle__switch {
+  background-color: var(--color-primary); /* Uses --color-primary (#0066cc) for ON state */
+}
+
+/* Toggle Slider (the moving circle) */
+.auto-improve-toggle__slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  transition: transform 200ms ease-in-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.auto-improve-toggle--active .auto-improve-toggle__slider {
+  transform: translateX(20px); /* Move right when ON */
+}
+
+/* Hover State */
+.auto-improve-toggle__switch:hover {
+  opacity: 0.9;
+}
+
+/* Focus State for Accessibility */
+.auto-improve-toggle__switch:focus {
+  outline: 2px solid var(--color-primary); /* Uses --color-primary for focus state */
+  outline-offset: 2px;
+}
