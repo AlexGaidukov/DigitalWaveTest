@@ -3,7 +3,7 @@
  * Proxies requests to OpenAI API, protecting API keys
  */
 
-import { CHAT_SYSTEM_PROMPT, IMPROVEMENT_SYSTEM_PROMPT } from './prompts.js';
+import { CHAT_SYSTEM_PROMPT, IMPROVEMENT_SYSTEM_PROMPT, AUTO_IMPROVE_SYSTEM_PROMPT } from './prompts.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -21,6 +21,8 @@ export default {
         return handleChatAPI(request, env);
       } else if (path === "/api/improve") {
         return handleImprovementAPI(request, env);
+      } else if (path === "/api/auto-improve") {
+        return handleAutoImproveAPI(request, env);
       }
 
       return new Response("Not Found", { status: 404 });
@@ -320,6 +322,98 @@ async function handleImprovementAPI(request, env) {
         improvedPrompt: improvementData.improvedPrompt,
         mapping: improvementData.mapping,
         explanations: improvementData.explanations
+      }
+    }), {
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+
+  } catch (error) {
+    if (error.message === 'INVALID_ORIGIN') {
+      return createErrorResponse(
+        "INVALID_ORIGIN",
+        "Request from unauthorized domain",
+        `Origin: ${request.headers.get('Origin')}`
+      );
+    }
+    return handleOpenAIError(error);
+  }
+}
+
+/**
+ * Handle /api/auto-improve endpoint
+ */
+async function handleAutoImproveAPI(request, env) {
+  try {
+    // Validate request method
+    if (request.method !== "POST") {
+      return createErrorResponse(
+        "INVALID_METHOD",
+        "Only POST requests allowed",
+        "Expected POST"
+      );
+    }
+
+    // Validate origin
+    validateOrigin(request, env);
+
+    // Parse request body
+    const body = await request.json();
+
+    if (!body.prompt || typeof body.prompt !== 'string') {
+      return createErrorResponse(
+        "MISSING_FIELDS",
+        "Prompt field is required",
+        "Field: prompt (string)"
+      );
+    }
+
+    if (body.prompt.trim().length === 0 || /^\s+$/.test(body.prompt)) {
+      return createErrorResponse(
+        "MISSING_FIELDS",
+        "Prompt cannot be empty or contain only whitespace",
+        "Field: prompt"
+      );
+    }
+
+    // Validate prompt length
+    const MAX_PROMPT_LENGTH = 10000;
+    if (body.prompt.length > MAX_PROMPT_LENGTH) {
+      return createErrorResponse(
+        "MISSING_FIELDS",
+        `Prompt exceeds maximum length of ${MAX_PROMPT_LENGTH} characters`,
+        `Provided: ${body.prompt.length} characters`
+      );
+    }
+
+    // Call OpenAI API
+    const response = await callOpenAIAPI(
+      [{ role: 'user', content: body.prompt }],
+      AUTO_IMPROVE_SYSTEM_PROMPT,
+      env,
+      15000, // 15 second timeout (NFR7-P1)
+      null,  // No JSON format - returns plain text
+      1000   // Optimized for prompt improvement
+    );
+
+    // Extract improved prompt from response
+    const improvedPrompt = response.choices[0].message.content;
+
+    if (!improvedPrompt || typeof improvedPrompt !== 'string' || improvedPrompt.trim().length === 0) {
+      return createErrorResponse(
+        "INVALID_RESPONSE",
+        "Invalid response from AI",
+        "Expected non-empty improved prompt"
+      );
+    }
+
+    // Return success response
+    return new Response(JSON.stringify({
+      success: true,
+      data: {
+        improvedPrompt: improvedPrompt.trim()
       }
     }), {
       headers: {
