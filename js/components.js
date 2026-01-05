@@ -387,9 +387,23 @@ const ErrorDisplay = React.memo(({ error, onRetry }) => {
 const MessageBubble = ({ message, type, showNotSatisfiedButton, onNotSatisfied, disabled }) => {
   const typeClass = type === 'sent' ? 'chat-interface__message--sent' : 'chat-interface__message--received';
   const isAI = message.role === 'assistant';
+  const isSystem = message.role === 'system';
+
+  // Story 7.3: Handle loading placeholder messages
+  if (message.isLoading) {
+    return (
+      <div className={`chat-interface__message ${typeClass} chat-interface__message--loading`}>
+        <div className="loading-spinner"></div>
+        <p className="loading-text">{message.loadingText}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className={`chat-interface__message ${typeClass}`}>
+    <div
+      className={`chat-interface__message ${typeClass}`}
+      role={isSystem ? 'system' : undefined}
+    >
       <div className="chat-interface__message-content">
         {message.content}
       </div>
@@ -617,7 +631,16 @@ const RetryButton = ({ onRetry, error, isRetrying }) => {
 // Story 2.4: Added optional disable during improvement generation
 // Story 5.4: Added error, onRetry, and isRetrying props for error display with retry
 const ChatInput = React.forwardRef(({ onSubmit, isLoading = false, value, onChange, isHighlighted = false, error, onRetry, isRetrying }, ref) => {
-  const { validationError, setValidationError, isGeneratingImprovement, isAutoImproveEnabled, setIsAutoImproveEnabled } = useAppContext();
+  const {
+    validationError,
+    setValidationError,
+    isGeneratingImprovement,
+    isAutoImproveEnabled,
+    setIsAutoImproveEnabled,
+    // Story 7.3: Auto-improve loading states
+    isImprovingPrompt,
+    isGeneratingResponse
+  } = useAppContext();
   const inputRef = React.useRef(null);
 
   // Story 7.2: Toggle handler for auto-improve feature
@@ -669,7 +692,16 @@ const ChatInput = React.forwardRef(({ onSubmit, isLoading = false, value, onChan
   }, [value, setValidationError, onSubmit]);
 
   // Story 2.4: Disable input during chat loading OR improvement generation
-  const isDisabled = isLoading || isGeneratingImprovement;
+  // Story 7.3: Disable input during auto-improvement phases
+  const isDisabled = isLoading || isGeneratingImprovement || isImprovingPrompt || isGeneratingResponse;
+
+  // Story 7.3: Button text state machine
+  const getButtonText = React.useCallback(() => {
+    if (isImprovingPrompt) return 'Improving...';
+    if (isGeneratingResponse) return 'Generating...';
+    if (isLoading) return 'Sending...';
+    return 'Send';
+  }, [isImprovingPrompt, isGeneratingResponse, isLoading]);
 
   return (
     <>
@@ -693,7 +725,7 @@ const ChatInput = React.forwardRef(({ onSubmit, isLoading = false, value, onChan
           onClick={handleSubmit}
           disabled={isDisabled || !value.trim()}
         >
-          {isLoading ? 'Sending...' : 'Send'}
+          {getButtonText()}
         </Button>
       </form>
       {validationError && <ValidationError error={validationError} />}
@@ -833,7 +865,29 @@ const ResetConfirmationModal = React.memo(({ isOpen, onConfirm, onCancel }) => {
 // Story 5.3: Add header with reset button and confirmation modal
 // Story 5.4: Added isRetrying state for retry debouncing
 const ChatInterface = ({ chatInputValue, setChatInputValue, chatInputRef, isInputHighlighted, onReset }) => {
-  const { chatHistory, isChatLoading, chatError, addMessage, setChatError, setIsChatLoading, setValidationError, isFeedbackModalOpen, setIsFeedbackModalOpen, setIsComparisonModalOpen, setRecentFeedback, isGeneratingImprovement } = useAppContext();
+  const {
+    chatHistory,
+    setChatHistory,
+    isChatLoading,
+    chatError,
+    addMessage,
+    setChatError,
+    setIsChatLoading,
+    setValidationError,
+    isFeedbackModalOpen,
+    setIsFeedbackModalOpen,
+    setIsComparisonModalOpen,
+    setRecentFeedback,
+    isGeneratingImprovement,
+    // Story 7.3: Auto-improve states
+    isAutoImproveEnabled,
+    isImprovingPrompt,
+    isGeneratingResponse,
+    autoImproveError,
+    setIsImprovingPrompt,
+    setIsGeneratingResponse,
+    setAutoImproveError
+  } = useAppContext();
   const [pendingPrompt, setPendingPrompt] = React.useState(null);
   const [isRetrying, setIsRetrying] = React.useState(false);
 
@@ -881,44 +935,155 @@ const ChatInterface = ({ chatInputValue, setChatInputValue, chatInputRef, isInpu
 
   // API integration submit handler - Story 1.4 implementation with retry support
   // Story 5.4: Enhanced with formatError for comprehensive error handling
+  // Story 7.3: Enhanced with auto-improve two-phase flow
   // Optimized with useCallback to prevent unnecessary re-renders
   const handleSubmit = React.useCallback(async (userPrompt) => {
-    try {
-      // Store prompt for potential retry
-      setPendingPrompt(userPrompt);
+    // Story 7.3: Check auto-improve toggle state
+    if (isAutoImproveEnabled) {
+      // Auto-improve flow: Phase 1 (Improvement)
+      try {
+        // Store prompt for potential retry
+        setPendingPrompt(userPrompt);
 
-      // Add user message to chat history
-      addMessage({ role: 'user', content: userPrompt });
+        // Create placeholder message with loading state
+        const placeholderMessage = {
+          role: 'user',
+          content: '',
+          isLoading: true,
+          loadingText: 'Improving your prompt...'
+        };
+        addMessage(placeholderMessage);
 
-      // Story 5.1: Clear input after submission
-      setChatInputValue('');
+        // Set improvement loading state
+        setIsImprovingPrompt(true);
 
-      // Clear validation and error on new submission
-      setValidationError(null);
-      setChatError(null);
+        // Clear validation and error on new submission
+        setValidationError(null);
+        setChatError(null);
+        setAutoImproveError(null);
 
-      // Set loading state
-      setIsChatLoading(true);
+        // Call auto-improve API
+        const improvedPrompt = await callAutoImproveAPI(userPrompt);
 
-      // Call API
-      const aiResponse = await callChatAPI(userPrompt);
+        // Phase 1 complete: Replace placeholder with improved prompt
+        setChatHistory(prev => {
+          const newHistory = [...prev];
+          newHistory[newHistory.length - 1] = {
+            role: 'user',
+            content: improvedPrompt,
+            isLoading: false
+          };
+          return newHistory;
+        });
 
-      // Add AI response to chat history
-      addMessage({ role: 'assistant', content: aiResponse });
+        setIsImprovingPrompt(false);
 
-      // Clear error on success
-      setChatError(null);
-      setPendingPrompt(null);
-    } catch (error) {
-      // Story 5.4: Format error for user-friendly display
-      const formattedError = formatError(error);
-      setChatError(formattedError);
-      console.error('Chat API error:', formattedError);
-    } finally {
-      // Always clear loading state
-      setIsChatLoading(false);
+        // Phase 2: Chat API with improved prompt
+        setIsGeneratingResponse(true);
+
+        // Call chat API with improved prompt
+        const aiResponse = await callChatAPI(improvedPrompt);
+
+        // Add AI response to chat history
+        addMessage({ role: 'assistant', content: aiResponse });
+
+        // Clear error on success
+        setChatError(null);
+        setPendingPrompt(null);
+
+        // AC: #6 - Clear input after successful auto-improve flow
+        // Both improved prompt and AI response are in chat history
+        setChatInputValue('');
+
+      } catch (error) {
+        // Handle auto-improve errors with graceful fallback
+        // Replace placeholder with original prompt and show error message
+        setChatHistory(prev => {
+          const newHistory = [...prev];
+          // Remove the loading placeholder
+          newHistory.pop();
+          // Add system error message and original prompt
+          return [
+            ...newHistory,
+            { role: 'system', content: "Couldn't improve prompt. Using original." },
+            { role: 'user', content: userPrompt }
+          ];
+        });
+
+        setIsImprovingPrompt(false);
+
+        // Fallback: Submit original prompt via chat API
+        setIsGeneratingResponse(true);
+        try {
+          const aiResponse = await callChatAPI(userPrompt);
+          addMessage({ role: 'assistant', content: aiResponse });
+          setChatError(null);
+          setPendingPrompt(null);
+          // Clear input after successful fallback
+          setChatInputValue('');
+        } catch (chatError) {
+          const chatFormattedError = formatError(chatError);
+          setChatError(chatFormattedError);
+          console.error('Chat API fallback error:', chatFormattedError);
+          // Keep input value on error so user can retry
+        }
+
+        // Toggle remains ON - user doesn't have to re-enable
+
+      } finally {
+        // Always clear response loading state
+        setIsGeneratingResponse(false);
+      }
+    } else {
+      // Normal direct submission (existing flow)
+      try {
+        // Store prompt for potential retry
+        setPendingPrompt(userPrompt);
+
+        // Add user message to chat history
+        addMessage({ role: 'user', content: userPrompt });
+
+        // Story 5.1: Clear input after submission
+        setChatInputValue('');
+
+        // Clear validation and error on new submission
+        setValidationError(null);
+        setChatError(null);
+
+        // Set loading state
+        setIsChatLoading(true);
+
+        // Call API
+        const aiResponse = await callChatAPI(userPrompt);
+
+        // Add AI response to chat history
+        addMessage({ role: 'assistant', content: aiResponse });
+
+        // Clear error on success
+        setChatError(null);
+        setPendingPrompt(null);
+      } catch (error) {
+        // Story 5.4: Format error for user-friendly display
+        const formattedError = formatError(error);
+        setChatError(formattedError);
+        console.error('Chat API error:', formattedError);
+      } finally {
+        // Always clear loading state
+        setIsChatLoading(false);
+      }
     }
-  }, [addMessage, setChatError, setIsChatLoading, setValidationError, setChatInputValue]);
+  }, [
+    isAutoImproveEnabled,
+    addMessage,
+    setChatHistory,
+    setIsImprovingPrompt,
+    setIsGeneratingResponse,
+    setChatError,
+    setIsChatLoading,
+    setValidationError,
+    setAutoImproveError,
+    setChatInputValue
+  ]);
 
   // Story 5.4: Retry handler with debouncing to prevent race conditions
   const handleRetry = React.useCallback(async () => {
@@ -1331,6 +1496,11 @@ const AppProvider = ({ children }) => {
   // Story 7.2: Auto-improve toggle state
   const [isAutoImproveEnabled, setIsAutoImproveEnabled] = React.useState(false);
 
+  // Story 7.3: Auto-improve loading states
+  const [isImprovingPrompt, setIsImprovingPrompt] = React.useState(false);
+  const [isGeneratingResponse, setIsGeneratingResponse] = React.useState(false);
+  const [autoImproveError, setAutoImproveError] = React.useState(null);
+
   // Story 4.1: Close comparison modal handler
   const handleCloseComparisonModal = () => {
     setIsComparisonModalOpen(false);
@@ -1365,6 +1535,10 @@ const AppProvider = ({ children }) => {
     recentFeedback,
     // Story 7.2: Auto-improve toggle state
     isAutoImproveEnabled,
+    // Story 7.3: Auto-improve loading states
+    isImprovingPrompt,
+    isGeneratingResponse,
+    autoImproveError,
     // State updaters
     setChatHistory,
     setIsChatLoading,
@@ -1378,6 +1552,10 @@ const AppProvider = ({ children }) => {
     setRecentFeedback,
     // Story 7.2: Auto-improve toggle updater
     setIsAutoImproveEnabled,
+    // Story 7.3: Auto-improve loading state updaters
+    setIsImprovingPrompt,
+    setIsGeneratingResponse,
+    setAutoImproveError,
     // Helper functions
     addMessage,
     clearChat,
@@ -1393,7 +1571,10 @@ const AppProvider = ({ children }) => {
     isGeneratingImprovement,
     improvementError,
     recentFeedback,
-    isAutoImproveEnabled
+    isAutoImproveEnabled,
+    isImprovingPrompt,
+    isGeneratingResponse,
+    autoImproveError
   ]);
 
   return (

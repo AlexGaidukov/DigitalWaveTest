@@ -87,8 +87,8 @@ development_status:
   epic-6-retrospective: optional
 
   # Epic 7: Automatic Prompt Improvement
-  epic-7: in-progress
+  epic-7: done
   7-1-auto-improvement-rules-worker-endpoint: done
   7-2-auto-improve-toggle-component: done
-  7-3-auto-improvement-chat-flow-integration: backlog
+  7-3-auto-improvement-chat-flow-integration: done
   epic-7-retrospective: optional

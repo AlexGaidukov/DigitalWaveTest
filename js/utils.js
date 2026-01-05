@@ -367,3 +367,70 @@ function parseImprovementResponse(apiResponse) {
     explanations: data.explanations
   };
 }
+
+// Auto-Improvement API integration - calls Cloudflare Worker for automatic prompt enhancement
+// Returns: Promise with improved prompt string
+// Throws: Formatted error object with code and message
+async function callAutoImproveAPI(userPrompt) {
+  // Validate input parameter (non-empty string, including whitespace-only check from Story 7.1)
+  if (!userPrompt || typeof userPrompt !== 'string' || userPrompt.trim().length === 0) {
+    throw formatError({ code: 'MISSING_FIELDS', message: 'Prompt is required and cannot be empty' });
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AUTO_IMPROVE_TIMEOUT);
+
+    const trimmedPrompt = userPrompt.trim();
+
+    const response = await fetch(`${WORKER_URL}/api/auto-improve`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: trimmedPrompt
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+
+    // Parse response: { success: true, data: { improvedPrompt: string } }
+    if (!result.success) {
+      throw new Error(result.error?.message || 'Unknown error');
+    }
+
+    // Validate improvedPrompt exists
+    if (!result.data || !result.data.improvedPrompt) {
+      throw formatError({ code: 'INVALID_RESPONSE', message: 'Missing improvedPrompt in response' });
+    }
+
+    // Return improved prompt string on success
+    return result.data.improvedPrompt;
+
+  } catch (error) {
+    // Handle errors: timeout, rate limit, network errors
+    if (error.name === 'AbortError') {
+      throw formatError({ code: 'API_TIMEOUT', message: 'Request timeout' });
+    }
+
+    if (error.message.includes('fetch') || error.message.includes('Network')) {
+      throw formatError({ code: 'NETWORK_ERROR', message: error.message });
+    }
+
+    // Handle rate limiting
+    if (error.message.includes('429')) {
+      throw formatError({ code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests' });
+    }
+
+    // Throw error with code on failure (for formatError handling)
+    throw formatError(error);
+  }
+}

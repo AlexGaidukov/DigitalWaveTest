@@ -10,9 +10,9 @@ workflowType: 'epics-and-stories'
 lastStep: 4
 project_name: 'DigitalWaveTest'
 user_name: 'Alexgaidukov'
-date: '2026-01-04'
-totalStories: 21
-totalEpics: 6
+date: '2026-01-05'
+totalStories: 24
+totalEpics: 7
 validationStatus: 'COMPLETE'
 allFRsCovered: true
 allNFRsCovered: true
@@ -272,6 +272,29 @@ This document provides the complete epic and story breakdown for DigitalWaveTest
 ## Epic List
 
 ### Epic 1: Interactive Chat Testing
+Users can write prompts in a familiar chat interface and test them against AI to see results, experiencing the chat interface they're already comfortable with (like ChatGPT).
+
+### Epic 2: Failure-Driven Feedback Capture
+Users can signal dissatisfaction when results don't meet their needs and provide contextual feedback about what went wrong, triggering the learning journey.
+
+### Epic 3: AI-Powered Prompt Transformation
+System analyzes user feedback and generates improved prompts using the Rules/Task/Examples framework, creating intelligent restructures that preserve user intent while adding systematic structure.
+
+### Epic 4: Visual Comparison & Educational Tooltips
+Users see side-by-side comparison with visual highlighting and contextual tooltips explaining WHY each improvement matters, creating the "aha moment" of understanding.
+
+### Epic 5: Prompt Application & Skill Transfer
+Users can apply improved prompts with one-click action, test them immediately to see better results, and experience the validation moment that builds confidence and enables independent skill transfer.
+
+### Epic 6: Prompt Structure Optimization
+Reorder the improved prompt structure to follow the Task → Rules → Examples framework for better AI comprehension and user experience.
+
+### Epic 7: Automatic Prompt Improvement
+Enable users to automatically improve their prompts before submission, eliminating the need to experience failure first. This feature adds a proactive improvement mode that applies enhancement rules transparently and displays the improved version as the user's message.
+
+---
+
+## Epic 1: Interactive Chat Testing
 
 Users can write prompts in a familiar chat interface and test them against AI to see results, experiencing the chat interface they're already comfortable with (like ChatGPT).
 
@@ -2059,5 +2082,259 @@ So that the prompt follows best practices and is easier to understand.
 **Requirements fulfilled:** Custom enhancement based on user feedback
 
 **Source:** [User request via Scrum Master agent]
+
+---
+
+## Epic 7: Automatic Prompt Improvement
+
+Enable users to automatically improve their prompts before submission, eliminating the need to experience failure first. This feature adds a proactive improvement mode that applies enhancement rules transparently and displays the improved version as the user's message.
+
+**User Outcome:** Users get better results immediately without experiencing frustration from poor AI responses first. The toggle allows gradual learning - users can observe how their prompts are being improved and internalize the patterns over time.
+
+**FRs covered:** FR7.1-FR7.10 (10 new FRs for Epic 7)
+
+**Implementation Notes:**
+- Adds toggle switch in chat interface for auto-improvement mode
+- Creates new `/api/auto-improve` endpoint in Cloudflare Worker
+- Adds new `AUTO_IMPROVE_SYSTEM_PROMPT` constant in prompts.js
+- Implements two-phase loading: improvement → chat response
+- Displays improved prompt as user message before AI response
+- Graceful fallback to original prompt if auto-improvement fails
+
+**Why standalone:** Complete proactive improvement functionality - users can enable auto-mode and have their prompts transparently enhanced before submission, creating a seamless learning experience.
+
+---
+
+### Story 7.1: Auto-Improvement Rules & Worker Endpoint
+
+As a developer,
+I want a dedicated API endpoint and rules constant for automatic prompt improvement,
+So that auto-improvement logic is separate from manual improvement and maintainable.
+
+**Acceptance Criteria:**
+
+**Given** prompts.js configuration file exists
+**When** adding auto-improvement support
+**Then** new constant `AUTO_IMPROVE_SYSTEM_PROMPT` is added to prompts.js
+**And** constant follows ES6 named export pattern: `export const AUTO_IMPROVE_SYSTEM_PROMPT = '...';`
+**And** prompt contains instructions for automatic prompt enhancement
+**And** prompt is separate from existing `IMPROVEMENT_SYSTEM_PROMPT`
+
+**Given** AUTO_IMPROVE_SYSTEM_PROMPT constant exists
+**When** defining the prompt content
+**Then** prompt instructs AI to enhance prompt structure using R/T/E framework
+**And** prompt emphasizes clarity, specificity, and completeness
+**And** prompt does NOT require user feedback (unlike manual improvement)
+**And** prompt returns ONLY improved prompt text (no JSON, no explanations)
+**And** prompt preserves user's original intent while adding structure
+
+**Given** worker.js file exists
+**When** implementing auto-improvement endpoint
+**Then** new endpoint `/api/auto-improve` is added
+**And** endpoint accepts POST requests with `{ prompt: string }`
+**And** endpoint validates prompt is present and non-empty
+**And** endpoint returns error if validation fails
+**And** endpoint calls OpenAI API with AUTO_IMPROVE_SYSTEM_PROMPT
+**And** endpoint returns `{ success: true, data: { improvedPrompt: string } }`
+**And** endpoint follows same error format as existing endpoints
+
+**Given** /api/auto-improve endpoint receives request
+**When** processing request
+**Then** endpoint validates request origin (same as existing endpoints)
+**And** endpoint uses callOpenAIAPI helper function
+**And** endpoint sets timeout to 15 seconds (NFR7-P1)
+**And** endpoint returns standardized error responses for failures
+**And** endpoint logs errors for debugging
+
+**Given** worker is deployed
+**When** client calls /api/auto-improve
+**Then** endpoint responds within 15 seconds or times out
+**And** successful response contains only improved prompt text
+**And** error response contains user-friendly error message
+**And** CORS headers are properly set
+
+**Implementation Notes:**
+
+**AUTO_IMPROVE_SYSTEM_PROMPT content:**
+```javascript
+export const AUTO_IMPROVE_SYSTEM_PROMPT = `You are a prompt enhancement expert. Your task is to improve the user's prompt by adding structure and clarity while preserving their original intent.
+
+Improvement Guidelines:
+1. Add clarity and specificity to vague instructions
+2. Ensure the prompt has a clear task definition
+3. Add relevant context or constraints if missing
+4. Improve formatting for readability
+5. Preserve the user's original voice and intent
+6. Do NOT add examples unless they would significantly help
+7. Do NOT add explicit "Rules/Task/Examples" labels
+8. Return ONLY the improved prompt text, no explanations or JSON
+
+The improved prompt should be 2-3 times longer than the original, with better structure and clarity.`;
+```
+
+**Worker endpoint structure:**
+```javascript
+async function handleAutoImproveAPI(request, env) {
+  try {
+    // Validate POST method
+    if (request.method !== 'POST') {
+      return createErrorResponse('INVALID_METHOD', 'Method not allowed', 'POST required');
+    }
+
+    // Parse body
+    const body = await request.json();
+
+    // Validate prompt field
+    if (!body.prompt || typeof body.prompt !== 'string') {
+      return createErrorResponse('MISSING_FIELDS', 'Prompt is required', 'Field "prompt" missing or invalid');
+    }
+
+    // Validate origin
+    validateOrigin(request, env);
+
+    // Call OpenAI API
+    const response = await callOpenAIAPI(
+      [{ role: 'user', content: body.prompt }],
+      AUTO_IMPROVE_SYSTEM_PROMPT,
+      env,
+      15000, // 15 second timeout
+      null,
+      500   // max tokens for improved prompt
+    );
+
+    const improvedPrompt = response.choices[0].message.content;
+
+    return createSuccessResponse({
+      improvedPrompt: improvedPrompt.trim()
+    });
+
+  } catch (error) {
+    return createErrorResponse(
+      error.code || 'AUTO_IMPROVE_ERROR',
+      error.message || 'Failed to improve prompt',
+      error.details || ''
+    );
+  }
+}
+```
+
+**Router update in worker.js:**
+```javascript
+if (url.pathname === '/api/chat') {
+  return handleChatAPI(request, env);
+}
+if (url.pathname === '/api/improve') {
+  return handleImprovementAPI(request, env);
+}
+if (url.pathname === '/api/auto-improve') {  // NEW
+  return handleAutoImproveAPI(request, env);
+}
+```
+
+**Requirements fulfilled:** FR7.8, FR7.9, NFR7-S1, NFR7-S2, NFR7-I1, NFR7-I2
+
+---
+
+### Story 7.2: Auto-Improve Toggle Component
+
+As a user,
+I want a toggle switch to enable/disable automatic prompt improvement,
+So that I can choose when to have my prompts automatically enhanced before submission.
+
+**Acceptance Criteria:**
+
+**Given** user is on the chat interface page
+**When** user views the chat input area
+**Then** toggle component labeled "Automatically Improve Prompt" is visible near the chat input field
+**And** toggle is in OFF state by default
+**And** toggle has clear visual ON/OFF states
+
+**Given** toggle is in OFF state
+**When** user clicks the toggle
+**Then** toggle animates to ON state
+**And** toggle state persists during the session
+**And** chat input behavior changes to use auto-improvement flow
+
+**Given** toggle is in ON state
+**When** user clicks the toggle
+**Then** toggle animates to OFF state
+**And** chat input behavior reverts to normal direct submission
+**And** user's original prompts are sent without auto-improvement
+
+**Given** toggle is in ON state
+**When** user types a prompt and submits
+**Then** prompt is sent to auto-improvement endpoint instead of direct chat
+**And** loading spinner displays in message placeholder
+**And** user cannot submit additional prompts until improvement completes
+
+**Implementation Notes:**
+- Toggle component should be a reusable leaf component following BEM-lite: `.auto-improve-toggle`, `.auto-improve-toggle--active`
+- State stored in React Context as `isAutoImproveEnabled` boolean
+- Toggle positioned above or beside chat input field for easy access
+- Visual distinction: OFF = gray/inactive, ON = green or accent color
+- Add CSS transition for smooth toggle animation (200ms)
+
+**Requirements fulfilled:** FR7.1, FR7.7, NFR-P1, NFR-P5
+
+---
+
+### Story 7.3: Auto-Improvement Chat Flow Integration
+
+As a user,
+I want my prompts to be automatically improved and displayed as my message before getting AI response,
+So that I can see the improved prompt structure while experiencing better AI results immediately.
+
+**Acceptance Criteria:**
+
+**Given** auto-improve toggle is ON
+**When** user submits a prompt
+**Then** system sends request to `/api/auto-improve` endpoint with `{ prompt: userPrompt }`
+**And** user message placeholder appears in chat with loading spinner
+**And** chat input field is disabled during improvement
+**And** submit button shows "Improving..." state
+
+**Given** auto-improvement API call is in progress
+**When** waiting for response
+**Then** loading spinner animates smoothly in message placeholder
+**And** placeholder shows "Improving your prompt..." text
+**And** no other messages can be submitted until improvement completes
+
+**Given** auto-improvement API returns improved prompt
+**When** response is received
+**Then** placeholder is replaced with actual message bubble containing improved prompt
+**And** message bubble is styled as user-sent message
+**And** improved prompt message is added to chat history
+**And** system immediately sends improved prompt to chat API (`/api/chat`)
+**And** second loading state shows "Generating response..."
+
+**Given** improved prompt has been submitted to chat API
+**When** AI response is received
+**Then** AI response message appears in chat history
+**And** chat shows both: improved prompt (as user message) and AI response
+**And** chat input field is re-enabled
+**And** loading state is cleared
+
+**Given** auto-improvement API returns an error
+**When** error occurs (timeout, rate limit, etc.)
+**Then** error message displays in chat: "Couldn't improve prompt. Using original."
+**And** system falls back to submitting original prompt to chat API
+**And** flow continues with original prompt
+**And** toggle remains ON (user doesn't have to re-enable)
+
+**Given** auto-improvement succeeds
+**When** viewing the improved prompt in chat
+**Then** original prompt input field value is preserved (not cleared)
+**And** user can see how their prompt was transformed
+**And** user can edit and resubmit if desired
+
+**Implementation Notes:**
+- Create new API function `callAutoImproveAPI(prompt)` in `js/utils.js`
+- Update chat submission logic in `js/components.js` to check `isAutoImproveEnabled` state
+- Implement two-phase loading: improvement phase → chat response phase
+- Add error handling with graceful fallback to original prompt
+- Follow existing error object pattern: `{ message, code }`
+- Use `isImprovingPrompt` and `isGeneratingResponse` loading states
+
+**Requirements fulfilled:** FR7.2, FR7.3, FR7.4, FR7.5, FR7.6, FR7.10, NFR7-P1, NFR7-P2, NFR7-P3, NFR7-I1
 
 ---
